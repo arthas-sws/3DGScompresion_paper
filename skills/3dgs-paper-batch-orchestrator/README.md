@@ -1,32 +1,14 @@
-# 3DGS 论文批量调度器
+# 3dgs-paper-batch-orchestrator
 
-该 Skill 与 `3dgs-paper-analyzer` 配合使用，解决批量处理中出现的中文漂移、后半批缩水、结果汇报缺失、论文数据互相污染和未校验即汇总等问题。
+批量调度 3DGS 论文单篇精读。它读取 retrieval `manifest.json`，为每篇论文生成独立任务包，等待 `3dgs-paper-analyzer` 逐篇产出 Markdown 和 JSON，然后校验、重试并汇总。
 
-## 安装结构
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\init_batch.py `
+  --manifest paper-retrieval-output\compression-survey-01\manifest.json `
+  --output-dir paper-batch-output\compression-survey-01
 
-```text
-.codex/skills/
-├── 3dgs-paper-analyzer/
-└── 3dgs-paper-batch-orchestrator/
+python skills\3dgs-paper-batch-orchestrator\scripts\run_batch.py `
+  --batch-dir paper-batch-output\compression-survey-01
 ```
 
-Windows 全局路径：
-
-```text
-C:\Users\<用户名>\.codex\skills\3dgs-paper-batch-orchestrator
-```
-
-项目内版本管理：
-
-```text
-项目\.ai\skills\3dgs-paper-batch-orchestrator
-```
-
-推荐调用：
-
-```text
-使用 3dgs-paper-batch-orchestrator 批量分析清单中的论文。
-单篇使用中文精读模式并顺序处理。
-每篇重新加载 3dgs-paper-analyzer、单独保存并执行质量检查。
-失败项最多重试两次，全部完成后再生成中文汇总和对比矩阵。
-```
+默认不会假装自动调用 Codex 子任务；未生成单篇报告时状态为 `waiting_for_agent`，并在 `attempts/` 中写入 prompt。
