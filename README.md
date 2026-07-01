@@ -88,7 +88,7 @@ PDF / URL
 Windows PowerShell：
 
 ```powershell
-$RepoSkills = "D:\github\3DGScompresion_paper\skills"
+$RepoSkills = (Resolve-Path ".\skills").Path
 $CodexSkills = "$env:USERPROFILE\.codex\skills"
 
 New-Item -ItemType Directory -Force -Path $CodexSkills | Out-Null
