@@ -1,0 +1,20 @@
+﻿# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated batch outputs
+paper-batch-output/
+*.attempt-*.md
+validation/
+retry-prompts/
+
+# Temporary files
+*.tmp
+*.log
+
+# Editor and system files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

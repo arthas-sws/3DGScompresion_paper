@@ -1,0 +1,3 @@
+id,title,source,code,notes
+P001,LightGaussian,https://arxiv.org/abs/2309.02612,https://github.com/VITA-Group/LightGaussian,重点关注 pruning 与蒸馏
+P002,Example Paper,https://arxiv.org/abs/0000.00000,,重点关注模型大小口径

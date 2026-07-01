@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{TITLE}}</title>
+  <style>
+    :root {
+      --bg:#f7f7f5; --panel:#fff; --text:#202124; --muted:#666b73;
+      --accent:#2457a6; --border:#e1e4e8; --code:#f3f5f7;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+      "Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+      line-height:1.8;
+    }
+    main {
+      width:min(960px,calc(100% - 32px)); margin:32px auto 72px;
+      background:var(--panel); padding:clamp(24px,5vw,64px);
+      border:1px solid var(--border); border-radius:16px;
+      box-shadow:0 8px 28px rgba(0,0,0,.04);
+    }
+    h1 { line-height:1.3; font-size:clamp(2rem,5vw,3rem); }
+    h2 { color:var(--accent); margin-top:2.7rem; padding-bottom:.35rem; border-bottom:1px solid var(--border); }
+    h3 { margin-top:1.8rem; }
+    a { color:var(--accent); }
+    blockquote { margin:1.4rem 0; padding:.8rem 1.1rem; border-left:4px solid var(--accent); background:#f2f6ff; }
+    table { width:100%; border-collapse:collapse; margin:1.3rem 0; display:block; overflow-x:auto; }
+    th,td { border:1px solid var(--border); padding:.65rem .8rem; text-align:left; vertical-align:top; }
+    th { background:#f6f7f9; }
+    pre { overflow-x:auto; background:var(--code); border:1px solid var(--border); border-radius:10px; padding:1rem; }
+    code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; }
+    img { max-width:100%; height:auto; border-radius:10px; border:1px solid var(--border); }
+    @media(max-width:640px) { main { width:100%; margin:0; border:0; border-radius:0; padding:22px 18px 48px; } }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      mermaid.initialize({startOnLoad:true,theme:"neutral",securityLevel:"strict"});
+    });
+  </script>
+</head>
+<body>
+<main>{{CONTENT}}</main>
+</body>
+</html>

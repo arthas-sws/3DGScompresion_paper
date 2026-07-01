@@ -1,0 +1,17 @@
+{
+  "batch_id": "compression-survey-01",
+  "mode": "中文精读",
+  "language": "zh-CN",
+  "parallel_workers": 1,
+  "max_retries": 2,
+  "output_dir": "paper-batch-output/compression-survey-01",
+  "papers": [
+    {
+      "id": "P001",
+      "title": "LightGaussian",
+      "source": "https://arxiv.org/abs/2309.02612",
+      "code": "https://github.com/VITA-Group/LightGaussian",
+      "notes": "重点关注 pruning、蒸馏和模型大小"
+    }
+  ]
+}
