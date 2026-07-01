@@ -1,0 +1,22 @@
+[project]
+name = "3dgscompresion-paper-skills"
+version = "0.1.0"
+description = "Codex skills for 3DGS paper retrieval, single-paper analysis, and batch orchestration."
+requires-python = ">=3.10"
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "jsonschema>=4.22",
+  "markdown>=3.6",
+  "requests>=2.31"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0"
+]
+pdf = [
+  "pypdf>=4.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

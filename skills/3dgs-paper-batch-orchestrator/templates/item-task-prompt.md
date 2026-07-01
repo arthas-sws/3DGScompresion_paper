@@ -1,29 +1,31 @@
-# 单篇论文隔离任务
+请使用 `3dgs-paper-analyzer` 对以下单篇论文做中文精读。
 
-- 任务 ID：{{PAPER_ID}}
-- 论文标题：{{TITLE}}
-- 论文来源：{{SOURCE}}
-- 代码来源：{{CODE}}
-- 分析模式：{{MODE}}
-- 特别关注：{{FOCUS}}
-- 输出语言：中文
-- 输出文件：{{OUTPUT_PATH}}
+## 任务边界
 
-## 强制执行
+- 只分析当前论文，不读取其他论文全文。
+- 必须输出 Markdown 和 JSON。
+- 不得编造论文未报告的实验数字。
+- 所有关键数字必须带证据和可比性标签。
 
-1. 重新读取 `3dgs-paper-analyzer/SKILL.md` 及其结果、证据规范。
-2. 只分析当前论文，不读取其他论文报告。
-3. 默认全文使用中文。
-4. 必须包含汇报摘要、主要结果总表、结果解读、局限和最终汇报总结。
-5. 所有关键数字标注论文表格、章节或代码来源。
-6. 未报告的数据明确写“论文未报告”。
-7. 不生成跨论文排名。
-8. 直接输出完整报告，不输出过程说明。
+## 论文信息
 
-## 输出前自检
+- Paper ID: {{PAPER_ID}}
+- Title: {{TITLE}}
+- Authors: {{AUTHORS}}
+- arXiv ID: {{ARXIV_ID}}
+- Source URL: {{SOURCE_URL}}
+- PDF Path: {{PDF_PATH}}
+- Code URL: {{CODE_URL}}
 
-- 是否以中文为主？
-- 是否有主要结果？
-- 是否说明结果稳定性和代价？
-- 是否说明证明了什么和尚未证明什么？
-- 是否有最终汇报总结？
+## 输出路径
+
+- Markdown: {{OUTPUT_MD}}
+- JSON: {{OUTPUT_JSON}}
+
+## 必须完成
+
+1. 重新读取 `3dgs-paper-analyzer/SKILL.md` 和必要 references。
+2. 阅读论文、补充材料和官方代码可得部分。
+3. 分析 3DGS 表示、渲染、优化、密度控制、实验、效率、局限和可复现性。
+4. JSON 遵循 `schemas/paper-analysis.schema.json`。
+5. 完成后运行 `validate_report.py` 或等待 batch 质量门槛校验。

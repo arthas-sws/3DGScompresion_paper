@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/3dgs/retrieval-manifest.schema.json",
+  "title": "3DGS Paper Retrieval Manifest",
+  "type": "object",
+  "required": ["schema_version", "batch_id", "created_at", "query", "papers"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "batch_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "query": {
+      "type": "object",
+      "properties": {
+        "keywords": { "type": "array", "items": { "type": "string" } },
+        "date_from": { "type": ["string", "null"] },
+        "date_to": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "papers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "authors",
+          "arxiv_id",
+          "source_url",
+          "pdf_url",
+          "local_pdf",
+          "download_status",
+          "metadata_status"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^P[0-9]{3,}$" },
+          "title": { "type": "string" },
+          "authors": { "type": "array", "items": { "type": "string" } },
+          "arxiv_id": { "type": "string" },
+          "arxiv_version": { "type": "string" },
+          "doi": { "type": "string" },
+          "source_url": { "type": "string" },
+          "pdf_url": { "type": "string" },
+          "local_pdf": { "type": "string" },
+          "metadata_path": { "type": "string" },
+          "code_url": { "type": "string" },
+          "published_at": { "type": "string" },
+          "updated_at": { "type": "string" },
+          "venue": { "type": "string" },
+          "download_status": {
+            "enum": ["pending", "downloaded", "skipped_existing", "failed", "not_requested"]
+          },
+          "metadata_status": {
+            "enum": ["complete", "partial", "missing", "failed"]
+          },
+          "deduplication": {
+            "type": "object",
+            "properties": {
+              "canonical_key": { "type": "string" },
+              "duplicates": { "type": "array", "items": { "type": "string" } },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": true
+          },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

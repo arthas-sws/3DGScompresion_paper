@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/3dgs/batch-status.schema.json",
+  "title": "3DGS Batch Analysis Status",
+  "type": "object",
+  "required": ["schema_version", "batch_id", "updated_at", "items"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "batch_id": { "type": "string", "minLength": 1 },
+    "updated_at": { "type": "string", "minLength": 1 },
+    "items": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "attempts"],
+        "properties": {
+          "status": {
+            "enum": [
+              "pending",
+              "source_ready",
+              "waiting_for_agent",
+              "analyzing",
+              "generated",
+              "validating",
+              "retrying",
+              "validated",
+              "failed_source",
+              "failed_analysis",
+              "failed_quality_gate"
+            ]
+          },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "last_attempt": { "type": "string" },
+          "report_path": { "type": "string" },
+          "json_path": { "type": "string" },
+          "validation_path": { "type": "string" },
+          "warnings": { "type": "array", "items": { "type": "string" } },
+          "errors": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

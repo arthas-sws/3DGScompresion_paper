@@ -1,64 +1,33 @@
-# 3DGS 论文深度分析器（中文版）
+# 3dgs-paper-analyzer
 
-这是一个面向 3D Gaussian Splatting、NeRF 和神经渲染论文的 Codex Skill。
-
-本版本重点修复：
-
-- 全部核心指令改为中文；
-- 默认强制中文输出；
-- 增加“汇报摘要”；
-- 增加主要结果总表；
-- 增加效率、存储、逐场景一致性和消融总结；
-- 增加“结果证明了什么 / 尚未证明什么”；
-- 增加最终汇报总结；
-- 中文化校验脚本；
-- 简化 Codex frontmatter。
-
-## 放置位置
-
-全局使用：
+单篇 3DGS/NeRF 相关论文中文精读 Skill。它不负责批量调度或多篇下载，只负责一篇论文的证据化分析，并输出：
 
 ```text
-C:\Users\<用户名>\.codex\skills\3dgs-paper-analyzer\
+P001.md
+P001.json
 ```
 
-项目内版本管理：
+生成空模板：
 
-```text
-项目目录\.ai\skills\3dgs-paper-analyzer\
+```powershell
+python skills\3dgs-paper-analyzer\scripts\create_analysis_stub.py `
+  --paper-id P001 `
+  --title "Paper Title" `
+  --output-dir analysis-output
 ```
 
-推荐让全局目录通过 Junction 指向项目内目录。
+校验报告：
 
-## 最终目录
-
-```text
-3dgs-paper-analyzer/
-├── SKILL.md
-├── references/
-│   ├── 3dgs-analysis-schema.md
-│   ├── evidence-policy.md
-│   ├── result-reporting.md
-│   └── output-profiles.md
-├── scripts/
-│   ├── render_html.py
-│   └── validate_report.py
-├── assets/
-│   └── article-template.html
-└── examples/
-    └── sample-request.md
+```powershell
+python skills\3dgs-paper-analyzer\scripts\validate_report.py `
+  --md analysis-output\P001.md `
+  --json analysis-output\P001.json
 ```
 
-## 使用示例
+可选 HTML 渲染：
 
-```text
-使用 3dgs-paper-analyzer 对这篇论文进行中文精读。
-必须汇报主要实验结果、逐场景稳定性、效率与存储代价，
-并总结实验真正证明了什么、还没有证明什么。
-```
-
-```text
-使用 3dgs-paper-analyzer 的审稿模式。
-重点检查场景选择、baseline 公平性、结果是否支持中心结论，
-最后给出中文审稿总结。
+```powershell
+python skills\3dgs-paper-analyzer\scripts\render_html.py `
+  analysis-output\P001.md `
+  analysis-output\P001.html
 ```
