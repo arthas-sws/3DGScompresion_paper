@@ -1,222 +1,297 @@
-# 论文分析 Skills 使用说明
+# 3DGS Paper Skills
 
-本仓库内置 3 个用于 3D Gaussian Splatting（3DGS）、NeRF、神经渲染和三维视觉论文分析的 Codex Skills。
+这是一个面向 3D Gaussian Splatting、Gaussian Splatting、NeRF、神经渲染和三维重建论文处理的 Codex Skills 工具集。
 
-## 目录结构
+仓库只保留三个职责分离的 Skill：
 
 ```text
-.ai/skills/
-├── 3dgs-paper-reader/
+skills/
+├── paper-retrieval-downloader/
 ├── 3dgs-paper-analyzer/
 └── 3dgs-paper-batch-orchestrator/
 ```
 
-> 实际目录名以仓库中的文件夹名称为准。每个 Skill 目录下都必须包含 `SKILL.md`。
-
-## 三个 Skill 的定位
-
-### 1. `3dgs-paper-reader`
-
-适合快速阅读单篇 3DGS/NeRF 论文。
-
-主要用途：
-
-- 快速提取论文元信息；
-- 总结研究问题和核心创新；
-- 梳理方法结构；
-- 提取数据集、指标和主要实验结果；
-- 给出局限性和相关工作关系。
-
-推荐调用：
+## 三阶段工作流
 
 ```text
-使用 $3dgs-paper-reader 快速阅读这篇论文，
-用中文总结研究问题、核心方法、主要实验结果和局限性。
+paper-retrieval-downloader
+        │
+        │ manifest.json + PDF
+        ▼
+3dgs-paper-batch-orchestrator
+        │
+        │ 每篇独立调用
+        ▼
+3dgs-paper-analyzer
 ```
 
-### 2. `3dgs-paper-analyzer`
-
-适合对单篇论文进行中文深度精读、审稿、代码核查或复现分析。
-
-主要用途：
-
-- 完整阅读论文和补充材料；
-- 分析 Gaussian 表示、渲染、损失和密度控制；
-- 核对官方代码与论文描述；
-- 汇报定量结果、速度、显存和模型大小；
-- 分析逐场景结果、消融和失败案例；
-- 判断实验真正证明了什么；
-- 输出中文精读报告、审稿报告或复现计划。
-
-推荐调用：
+单篇场景也可以直接使用：
 
 ```text
-使用 $3dgs-paper-analyzer 对这篇论文进行中文精读。
-
-必须包含：
-1. 汇报摘要；
-2. 方法总体流程；
-3. 主要实验结果总表；
-4. 效率与存储结果；
-5. 逐场景稳定性；
-6. 消融实验总结；
-7. 结果证明了什么；
-8. 结果尚未证明什么；
-9. 最终汇报总结。
+PDF / URL
+    ▼
+3dgs-paper-analyzer
 ```
 
-审稿模式：
+## 三个 Skill 的职责
+
+`paper-retrieval-downloader`
+
+- 检索论文、解析 arXiv 元信息、去重、下载 PDF；
+- 生成 `manifest.json`、`failures.json`、`metadata/` 和 `papers.md`；
+- 不分析方法，不维护 README/abs/archive/venue，不生成 Changelog。
+
+`3dgs-paper-analyzer`
+
+- 对单篇论文做中文精读；
+- 阅读论文、补充材料、项目主页和官方代码；
+- 分析 3DGS 表示、渲染、优化、密度控制、压缩、实验、公平性、效率和局限；
+- 同时输出 `P001.md` 和 `P001.json`；
+- 不做批量调度，不下载多篇论文，不生成固定字数 HTML 长文。
+
+`3dgs-paper-batch-orchestrator`
+
+- 读取 retrieval `manifest.json`；
+- 为每篇论文生成独立任务包；
+- 调用 `3dgs-paper-analyzer` 的单篇流程；
+- 维护 `status.json`，支持中断恢复、重试、质量门槛和汇总；
+- 只用 `validated` 项生成批次总结、方法矩阵和结果矩阵。
+
+## 目录结构
 
 ```text
-使用 $3dgs-paper-analyzer 的审稿模式检查这篇论文。
-重点审核方法正确性、数据集与场景选择、baseline 公平性、
-实验是否支撑中心结论、代码完整性和可复现性。
+3DGScompresion_paper/
+├── README.md
+├── LICENSE
+├── ATTRIBUTION.md
+├── CHANGELOG.md
+├── pyproject.toml
+├── schemas/
+│   ├── retrieval-manifest.schema.json
+│   ├── failures.schema.json
+│   ├── paper-analysis.schema.json
+│   └── batch-status.schema.json
+├── skills/
+│   ├── paper-retrieval-downloader/
+│   ├── 3dgs-paper-analyzer/
+│   └── 3dgs-paper-batch-orchestrator/
+└── tests/
+    ├── test_retrieval_manifest.py
+    ├── test_analysis_output.py
+    └── test_batch_validation.py
 ```
 
-### 3. `3dgs-paper-batch-orchestrator`
+## 安装
 
-适合批量整理多篇论文。
+将 `skills/<skill-name>/` 复制到 Codex Skills 目录，或直接在本仓库中引用。
 
-该 Skill 不替代单篇分析，而是负责：
-
-- 建立论文清单；
-- 将每篇论文拆成独立任务；
-- 每篇重新调用 `3dgs-paper-analyzer`；
-- 强制中文输出；
-- 检查结果完整性和证据；
-- 对失败任务进行重试；
-- 生成批次总览和方法对比矩阵。
-
-推荐调用：
-
-```text
-使用 $3dgs-paper-batch-orchestrator 批量分析 batch.json 中的论文。
-
-要求：
-1. 单篇使用中文精读模式；
-2. 默认顺序处理；
-3. 每篇重新加载 $3dgs-paper-analyzer；
-4. 每篇报告单独保存；
-5. 通过中文、结果完整性和证据检查后才能进入汇总；
-6. 失败任务最多重试两次；
-7. 最后生成批次总结、方法矩阵、结果矩阵和失败清单。
-```
-
-## Skill 之间的调用关系
-
-```text
-快速阅读单篇论文
-    └── 3dgs-paper-reader
-
-深度分析单篇论文
-    └── 3dgs-paper-analyzer
-
-批量分析多篇论文
-    └── 3dgs-paper-batch-orchestrator
-            └── 逐篇调用 3dgs-paper-analyzer
-```
-
-## 在 Codex 中安装
-
-### Windows 全局安装目录
-
-```text
-C:\Users\<用户名>\.codex\skills\
-```
-
-例如：
-
-```text
-C:\Users\artha\.codex\skills\
-```
-
-将仓库中的三个 Skill 复制到全局目录：
+Windows PowerShell：
 
 ```powershell
-$RepoSkills = "D:\github\3D-Gaussian-Splatting-Papers\.ai\skills"
-$CodexSkills = "C:\Users\artha\.codex\skills"
+$RepoSkills = "D:\github\3DGScompresion_paper\skills"
+$CodexSkills = "$env:USERPROFILE\.codex\skills"
 
 New-Item -ItemType Directory -Force -Path $CodexSkills | Out-Null
-
-Copy-Item "$RepoSkills\3dgs-paper-reader" `
-  "$CodexSkills\" -Recurse -Force
-
-Copy-Item "$RepoSkills\3dgs-paper-analyzer" `
-  "$CodexSkills\" -Recurse -Force
-
-Copy-Item "$RepoSkills\3dgs-paper-batch-orchestrator" `
-  "$CodexSkills\" -Recurse -Force
+Copy-Item "$RepoSkills\paper-retrieval-downloader" "$CodexSkills\" -Recurse -Force
+Copy-Item "$RepoSkills\3dgs-paper-analyzer" "$CodexSkills\" -Recurse -Force
+Copy-Item "$RepoSkills\3dgs-paper-batch-orchestrator" "$CodexSkills\" -Recurse -Force
 ```
 
-复制后重新打开 Codex 会话。
+Linux/macOS：
 
-## 推荐的开发方式
+```bash
+repo_skills="$HOME/path/to/3DGScompresion_paper/skills"
+codex_skills="${CODEX_HOME:-$HOME/.codex}/skills"
 
-仓库内的 `.ai/skills/` 作为唯一维护版本。
+mkdir -p "$codex_skills"
+cp -R "$repo_skills/paper-retrieval-downloader" "$codex_skills/"
+cp -R "$repo_skills/3dgs-paper-analyzer" "$codex_skills/"
+cp -R "$repo_skills/3dgs-paper-batch-orchestrator" "$codex_skills/"
+```
 
-修改 Skill 后，再同步到 Codex 全局目录：
+## 依赖安装
+
+Python 最低版本：`3.10`。
+
+使用 `uv`：
 
 ```powershell
-$RepoSkills = "D:\github\3D-Gaussian-Splatting-Papers\.ai\skills"
-$CodexSkills = "C:\Users\artha\.codex\skills"
-
-$Skills = @(
-  "3dgs-paper-reader",
-  "3dgs-paper-analyzer",
-  "3dgs-paper-batch-orchestrator"
-)
-
-foreach ($Skill in $Skills) {
-  Remove-Item "$CodexSkills\$Skill" -Recurse -Force -ErrorAction SilentlyContinue
-  Copy-Item "$RepoSkills\$Skill" "$CodexSkills\" -Recurse -Force
-}
+uv sync --extra test
 ```
 
-也可以使用 Junction，让全局目录直接指向仓库：
+使用 `pip`：
 
 ```powershell
-$RepoSkills = "D:\github\3D-Gaussian-Splatting-Papers\.ai\skills"
-$CodexSkills = "C:\Users\artha\.codex\skills"
-
-$Skills = @(
-  "3dgs-paper-reader",
-  "3dgs-paper-analyzer",
-  "3dgs-paper-batch-orchestrator"
-)
-
-New-Item -ItemType Directory -Force -Path $CodexSkills | Out-Null
-
-foreach ($Skill in $Skills) {
-  Remove-Item "$CodexSkills\$Skill" -Recurse -Force -ErrorAction SilentlyContinue
-  New-Item -ItemType Junction `
-    -Path "$CodexSkills\$Skill" `
-    -Target "$RepoSkills\$Skill" | Out-Null
-}
+python -m pip install -e .[test]
 ```
 
-使用 Junction 后，只需修改仓库中的 Skill，无需再次复制。
+Linux/macOS：
 
-## 仓库内的 AGENTS.md 建议
-
-可在仓库根目录的 `AGENTS.md` 中加入：
-
-```markdown
-## Paper Analysis Skills
-
-When working with 3DGS, NeRF, neural rendering, or 3D vision papers:
-
-- For quick single-paper reading, use `.ai/skills/3dgs-paper-reader/SKILL.md`.
-- For deep single-paper analysis, review, code inspection, or reproduction, use `.ai/skills/3dgs-paper-analyzer/SKILL.md`.
-- For multi-paper batch analysis, use `.ai/skills/3dgs-paper-batch-orchestrator/SKILL.md`.
-- Unless the user explicitly requests English, all paper reports and batch summaries must be written in Chinese.
-- Batch analysis must process papers independently and validate each report before aggregation.
+```bash
+uv sync --extra test
+python -m pip install -e '.[test]'
 ```
 
-## 注意事项
+说明：
 
-1. 不要只上传 `SKILL.md`，应上传整个 Skill 文件夹。
-2. `references/`、`scripts/`、`templates/`、`assets/` 都可能被主 Skill 引用。
-3. 不要提交批量分析产生的大型 PDF、缓存和临时结果。
-4. 批处理结果建议放入独立目录，并根据需要加入 `.gitignore`。
-5. 修改 Skill 后，应检查 `SKILL.md` 的相对路径是否仍然正确。
-6. 批量分析时优先顺序执行，只有在任务真正隔离时才开启并行。
+- 核心脚本尽量使用 Python 标准库；
+- `markdown` 用于可选 HTML 渲染；
+- `jsonschema` 可用于外部 schema 校验；
+- `beautifulsoup4`、`requests` 预留给更复杂的网页元信息解析；
+- Windows PowerShell 下建议保持 UTF-8 文件编码，避免用旧控制台编码重写中文 Markdown。
+
+## 检索下载示例
+
+Windows PowerShell：
+
+```powershell
+python skills\paper-retrieval-downloader\scripts\fetch.py `
+  --batch-id compression-survey-01 `
+  --keyword "3D Gaussian Splatting compression" `
+  --keyword "Gaussian Splatting pruning" `
+  --max-results 20 `
+  --output tmp\compression-candidates.json
+
+python skills\paper-retrieval-downloader\scripts\download.py `
+  --input tmp\compression-candidates.json `
+  --batch-id compression-survey-01 `
+  --output-dir paper-retrieval-output\compression-survey-01
+```
+
+Linux/macOS：
+
+```bash
+python skills/paper-retrieval-downloader/scripts/fetch.py \
+  --batch-id compression-survey-01 \
+  --keyword "3D Gaussian Splatting compression" \
+  --keyword "Gaussian Splatting pruning" \
+  --max-results 20 \
+  --output tmp/compression-candidates.json
+
+python skills/paper-retrieval-downloader/scripts/download.py \
+  --input tmp/compression-candidates.json \
+  --batch-id compression-survey-01 \
+  --output-dir paper-retrieval-output/compression-survey-01
+```
+
+`uv` 形式：
+
+```powershell
+uv run python skills\paper-retrieval-downloader\scripts\download.py `
+  --input tmp\compression-candidates.json `
+  --batch-id compression-survey-01 `
+  --output-dir paper-retrieval-output\compression-survey-01
+```
+
+## 单篇分析示例
+
+直接请求 Codex：
+
+```text
+使用 3dgs-paper-analyzer 分析 paper-retrieval-output/compression-survey-01/manifest.json 中的 P001。
+输出 analysis-output/P001.md 和 analysis-output/P001.json。
+关键数字必须进入 JSON，并带证据和可比性标签。
+```
+
+生成空模板：
+
+```powershell
+python skills\3dgs-paper-analyzer\scripts\create_analysis_stub.py `
+  --paper-id P001 `
+  --title "Paper Title" `
+  --output-dir analysis-output `
+  --pdf-path paper-retrieval-output\compression-survey-01\papers\P001.pdf
+```
+
+校验：
+
+```powershell
+python skills\3dgs-paper-analyzer\scripts\validate_report.py `
+  --md analysis-output\P001.md `
+  --json analysis-output\P001.json `
+  --manifest paper-retrieval-output\compression-survey-01\manifest.json
+```
+
+## 批量分析示例
+
+初始化批次：
+
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\init_batch.py `
+  --manifest paper-retrieval-output\compression-survey-01\manifest.json `
+  --output-dir paper-batch-output\compression-survey-01
+```
+
+生成任务包或恢复批次：
+
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\run_batch.py `
+  --batch-dir paper-batch-output\compression-survey-01
+```
+
+当 `items/P001.md` 和 `items/P001.json` 由单篇 analyzer 生成后：
+
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\validate_item.py `
+  --batch-dir paper-batch-output\compression-survey-01 `
+  --paper-id P001
+
+python skills\3dgs-paper-batch-orchestrator\scripts\aggregate_reports.py `
+  --batch-dir paper-batch-output\compression-survey-01
+
+python skills\3dgs-paper-batch-orchestrator\scripts\validate_batch.py `
+  --batch-dir paper-batch-output\compression-survey-01
+```
+
+Linux/macOS 将反斜杠换成 `/`，并可使用 `uv run python ...`。
+
+## 输入输出协议
+
+检索输出：
+
+```text
+paper-retrieval-output/<batch_id>/
+├── manifest.json
+├── failures.json
+├── papers/
+├── metadata/
+└── papers.md
+```
+
+单篇输出：
+
+```text
+P001.md
+P001.json
+```
+
+批量输出：
+
+```text
+paper-batch-output/<batch_id>/
+├── manifest.json
+├── status.json
+├── items/
+├── attempts/
+├── validation/
+├── retry-prompts/
+├── batch-summary.md
+├── comparison-matrix.md
+├── result-matrix.json
+└── failed-items.md
+```
+
+## 常见错误
+
+- `waiting_for_agent`：当前环境没有自动调用 Codex 子任务。打开 `attempts/*.prompt.md`，逐篇交给 `3dgs-paper-analyzer` 执行。
+- `failed_source`：manifest 中的 PDF 路径不存在。检查 retrieval 输出目录是否移动，或重新运行下载。
+- `failed_quality_gate`：单篇 Markdown/JSON 缺少结构、证据或关键数字。按 `validation/Pxxx.json` 修正后重试。
+- `result-matrix.json not generated yet`：先运行 `aggregate_reports.py`。
+- Windows 中文乱码：确保文件按 UTF-8 保存；不要用旧编码的编辑器重写 `SKILL.md`。
+- 下载失败：查看 `failures.json`，失败不会静默跳过；默认不会覆盖已有 PDF，需覆盖时显式使用 `--overwrite`。
+
+## License 和 Attribution
+
+仓库脚本和 Skill 文档采用 MIT License，见 `LICENSE`。
+
+论文、PDF、项目主页和代码仓库仍归原作者、出版方或对应开源许可证所有。见 `ATTRIBUTION.md`。
