@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/3dgs/failures.schema.json",
+  "title": "3DGS Paper Retrieval Failures",
+  "type": "object",
+  "required": ["schema_version", "batch_id", "failures"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "batch_id": { "type": "string", "minLength": 1 },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "stage", "reason", "attempts", "retryable"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "source_url": { "type": "string" },
+          "stage": {
+            "enum": ["fetch", "metadata", "deduplicate", "download", "manifest", "unknown"]
+          },
+          "reason": { "type": "string" },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "retryable": { "type": "boolean" }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

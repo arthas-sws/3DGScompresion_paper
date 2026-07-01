@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/3dgs/paper-analysis.schema.json",
+  "title": "3DGS Single Paper Analysis",
+  "type": "object",
+  "required": ["schema_version", "paper", "analysis", "validation"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "paper": {
+      "type": "object",
+      "required": ["id", "title", "authors", "source_url", "pdf_path"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^P[0-9]{3,}$" },
+        "title": { "type": "string" },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "arxiv_id": { "type": "string" },
+        "source_url": { "type": "string" },
+        "pdf_path": { "type": "string" },
+        "code_url": { "type": "string" },
+        "paper_version": { "type": "string" },
+        "code_commit": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "analysis": {
+      "type": "object",
+      "required": [
+        "task",
+        "core_contribution",
+        "method_summary",
+        "method_category",
+        "datasets",
+        "metrics",
+        "main_results",
+        "efficiency",
+        "ablations",
+        "code_mapping",
+        "limitations",
+        "claims",
+        "evidence",
+        "comparability",
+        "reproducibility"
+      ],
+      "properties": {
+        "task": { "type": "string" },
+        "core_contribution": { "type": "string" },
+        "method_summary": { "type": "string" },
+        "method_category": { "type": "array", "items": { "type": "string" } },
+        "datasets": { "type": "array", "items": { "type": "string" } },
+        "metrics": { "type": "array", "items": { "type": "string" } },
+        "main_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["metric", "comparability", "evidence"],
+            "properties": {
+              "dataset": { "type": "string" },
+              "scene": { "type": "string" },
+              "metric": { "type": "string" },
+              "method_value": { "type": ["number", "string", "null"] },
+              "baseline_name": { "type": "string" },
+              "baseline_value": { "type": ["number", "string", "null"] },
+              "difference": { "type": ["number", "string", "null"] },
+              "comparison_direction": {
+                "enum": ["higher_is_better", "lower_is_better", "not_applicable", ""]
+              },
+              "comparability": { "type": "string" },
+              "evidence": { "type": "string" },
+              "notes": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "efficiency": { "type": "array" },
+        "ablations": { "type": "array" },
+        "code_mapping": { "type": "array" },
+        "limitations": { "type": "array" },
+        "claims": { "type": "array" },
+        "evidence": { "type": "array" },
+        "comparability": { "type": "array" },
+        "reproducibility": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "validation": {
+      "type": "object",
+      "required": ["language", "status", "missing_sections", "warnings"],
+      "properties": {
+        "language": { "const": "zh-CN" },
+        "status": { "enum": ["PASS", "WARN", "FAIL"] },
+        "missing_sections": { "type": "array", "items": { "type": "string" } },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
