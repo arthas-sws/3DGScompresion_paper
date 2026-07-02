@@ -6,8 +6,11 @@
   "required": [
     "schema_version",
     "paper",
+    "source_pack_path",
+    "review_depth",
     "index_card",
     "innovation_claims",
+    "claim_evidence_matrix",
     "experiment_tables",
     "experiment_audit",
     "novelty_assessment",
@@ -18,41 +21,30 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": { "const": "1.0" },
+    "schema_version": { "const": "1.1" },
+    "source_pack_path": { "type": "string", "minLength": 1 },
+    "review_depth": { "enum": ["preliminary", "deep"] },
     "paper": {
       "type": "object",
       "required": ["id", "title", "pdf_path"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": { "type": "string", "pattern": "^P[0-9]{3,}$" },
         "title": { "type": "string", "minLength": 1 },
         "authors": { "type": "array", "items": { "type": "string" } },
-        "year": { "type": ["integer", "string", "null"] },
-        "venue_or_arxiv": { "type": ["string", "null"] },
         "arxiv_id": { "type": ["string", "null"] },
-        "doi": { "type": ["string", "null"] },
         "source_url": { "type": ["string", "null"] },
         "pdf_path": { "type": "string", "minLength": 1 },
-        "pdf_hash": {
-          "type": ["string", "null"],
-          "pattern": "^[A-Fa-f0-9]{32,128}$"
-        },
+        "pdf_hash": { "type": ["string", "null"], "pattern": "^[A-Fa-f0-9]{32,128}$" },
         "paper_version": { "type": ["string", "null"] },
+        "code_commit": { "type": ["string", "null"] },
         "analysis_scope": { "type": "string" }
       }
     },
     "index_card": {
       "type": "object",
-      "required": [
-        "task",
-        "method_tags",
-        "innovation_tags",
-        "one_sentence_takeaway",
-        "report_path",
-        "analysis_json_path",
-        "innovation_review_path"
-      ],
-      "additionalProperties": false,
+      "required": ["task", "method_tags", "innovation_tags", "one_sentence_takeaway", "report_path", "analysis_json_path", "innovation_review_path"],
+      "additionalProperties": true,
       "properties": {
         "task": { "type": "string" },
         "method_tags": { "type": "array", "items": { "type": "string" } },
@@ -61,7 +53,6 @@
         "main_metrics": { "type": "array", "items": { "type": "string" } },
         "datasets": { "type": "array", "items": { "type": "string" } },
         "one_sentence_takeaway": { "type": "string" },
-        "best_use_for_future_reading": { "type": ["string", "null"] },
         "open_questions": { "type": "array", "items": { "type": "string" } },
         "report_path": { "type": "string" },
         "analysis_json_path": { "type": "string" },
@@ -73,98 +64,79 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["claim_id", "claim", "method_location", "author_claim", "interpretation", "evidence"],
+        "required": [
+          "claim_id",
+          "title",
+          "author_claim",
+          "interpretation",
+          "method_location",
+          "code_location",
+          "evidence_ids",
+          "counter_evidence_ids",
+          "support_level",
+          "missing_evidence",
+          "closest_prior_work",
+          "differentiators",
+          "confidence"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "claim_id": { "type": "string", "pattern": "^C[0-9]+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "author_claim": { "type": "string" },
+          "interpretation": { "type": "string" },
+          "method_location": { "type": "array", "items": { "type": "string" } },
+          "code_location": { "type": "array", "items": { "type": "string" } },
+          "evidence_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "counter_evidence_ids": { "type": "array", "items": { "type": "string" } },
+          "support_level": { "enum": ["direct", "partial", "indirect", "none", "conflict"] },
+          "missing_evidence": { "type": "array", "items": { "type": "string" } },
+          "closest_prior_work": { "type": "array", "items": { "type": "string" } },
+          "differentiators": { "type": "array", "items": { "type": "string" } },
+          "confidence": { "enum": ["low", "medium", "high"] }
+        }
+      }
+    },
+    "claim_evidence_matrix": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "theory", "main_results", "ablation", "efficiency", "failure_cases", "code", "final_judgment"],
         "additionalProperties": false,
         "properties": {
           "claim_id": { "type": "string", "pattern": "^C[0-9]+$" },
-          "claim": { "type": "string", "minLength": 1 },
-          "method_location": { "type": "string", "minLength": 1 },
-          "author_claim": { "type": "string" },
-          "interpretation": { "type": "string" },
-          "method_components": { "type": "array", "items": { "type": "string" } },
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": { "type": "string", "minLength": 1 }
-          }
+          "theory": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "main_results": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "ablation": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "efficiency": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "failure_cases": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "code": { "enum": ["直接", "部分", "间接", "无", "冲突"] },
+          "final_judgment": { "type": "string" }
         }
       }
     },
-    "experiment_tables": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "table_id",
-          "caption",
-          "evidence",
-          "extraction_method",
-          "verification_status",
-          "comparability",
-          "columns",
-          "rows",
-          "uncertain_cells"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "table_id": { "type": "string", "pattern": "^T[0-9]+$" },
-          "caption": { "type": "string" },
-          "evidence": { "type": "string", "minLength": 1 },
-          "source_page": { "type": ["integer", "string", "null"] },
-          "extraction_method": { "enum": ["automatic", "manual_transcription", "mixed"] },
-          "verification_status": { "enum": ["verified", "partial", "unverified"] },
-          "comparability": {
-            "enum": ["directly_comparable", "partially_comparable", "not_directly_comparable"]
-          },
-          "columns": { "type": "array", "items": { "type": "string" } },
-          "rows": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": {
-                "type": ["string", "number", "boolean", "null", "object", "array"]
-              }
-            }
-          },
-          "uncertain_cells": { "type": "array", "items": { "type": "string" } },
-          "notes": { "type": ["string", "null"] }
-        }
-      }
-    },
+    "experiment_tables": { "type": "array", "items": { "type": "object" } },
     "experiment_audit": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["claim_id", "support_level", "reasoning", "evidence", "missing_evidence"],
-        "additionalProperties": false,
+        "required": ["claim_id", "support_level", "reasoning", "evidence_ids", "missing_evidence"],
+        "additionalProperties": true,
         "properties": {
           "claim_id": { "type": "string", "pattern": "^C[0-9]+$" },
-          "support_level": {
-            "enum": ["directly_supported", "partially_supported", "weakly_supported", "not_tested", "unclear"]
-          },
+          "support_level": { "enum": ["direct", "partial", "indirect", "none", "conflict"] },
           "reasoning": { "type": "string" },
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": { "type": "string", "minLength": 1 }
-          },
+          "evidence_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
           "missing_evidence": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
     "novelty_assessment": {
       "type": "object",
-      "required": [
-        "scope",
-        "closest_prior_work",
-        "overlap",
-        "differentiators",
-        "evidence_limitations",
-        "confidence",
-        "conclusion"
-      ],
-      "additionalProperties": false,
+      "required": ["scope", "closest_prior_work", "overlap", "differentiators", "evidence_limitations", "confidence", "conclusion"],
+      "additionalProperties": true,
       "properties": {
         "scope": { "type": "string" },
         "closest_prior_work": { "type": "array", "items": { "type": "string" } },
@@ -179,28 +151,19 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "idea",
-          "category",
-          "targets_claim",
-          "motivation",
-          "expected_benefit",
-          "risk",
-          "experiment_to_validate",
-          "evidence_basis"
-        ],
-        "additionalProperties": false,
+        "required": ["idea_id", "idea", "targets_claim", "research_value", "implementation_cost", "failure_risk", "required_resources", "minimum_validation", "priority", "evidence_ids"],
+        "additionalProperties": true,
         "properties": {
+          "idea_id": { "type": "string", "pattern": "^I[0-9]+$" },
           "idea": { "type": "string" },
-          "category": {
-            "enum": ["experiment_only_fix", "low_risk_extension", "medium_risk_method_change", "high_risk_research_direction"]
-          },
           "targets_claim": { "type": "string", "pattern": "^(C[0-9]+|general)$" },
-          "motivation": { "type": "string" },
-          "expected_benefit": { "type": "string" },
-          "risk": { "type": "string" },
-          "experiment_to_validate": { "type": "string" },
-          "evidence_basis": { "type": "string" }
+          "research_value": { "enum": ["high", "medium", "low"] },
+          "implementation_cost": { "enum": ["high", "medium", "low"] },
+          "failure_risk": { "enum": ["high", "medium", "low"] },
+          "required_resources": { "type": "array", "items": { "type": "string" } },
+          "minimum_validation": { "type": "string" },
+          "priority": { "enum": ["P0", "P1", "P2"] },
+          "evidence_ids": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
@@ -208,26 +171,22 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "claim_id",
-          "missing_or_weak_evidence",
-          "proposed_experiment",
-          "control_baselines",
-          "datasets",
-          "metrics",
-          "expected_observation",
-          "failure_interpretation"
-        ],
-        "additionalProperties": false,
+        "required": ["experiment_id", "claim_id", "goal", "hypothesis", "independent_variables", "control_baselines", "datasets", "metrics", "implementation_steps", "expected_result", "failure_interpretation", "estimated_cost", "priority"],
+        "additionalProperties": true,
         "properties": {
+          "experiment_id": { "type": "string", "pattern": "^X[0-9]+$" },
           "claim_id": { "type": "string", "pattern": "^(C[0-9]+|general)$" },
-          "missing_or_weak_evidence": { "type": "string" },
-          "proposed_experiment": { "type": "string" },
+          "goal": { "type": "string" },
+          "hypothesis": { "type": "string" },
+          "independent_variables": { "type": "array", "minItems": 1, "items": { "type": "string" } },
           "control_baselines": { "type": "array", "items": { "type": "string" } },
           "datasets": { "type": "array", "items": { "type": "string" } },
           "metrics": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-          "expected_observation": { "type": "string" },
-          "failure_interpretation": { "type": "string" }
+          "implementation_steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "expected_result": { "type": "string" },
+          "failure_interpretation": { "type": "string" },
+          "estimated_cost": { "enum": ["low", "medium", "high"] },
+          "priority": { "enum": ["P0", "P1", "P2"] }
         }
       }
     },
@@ -235,31 +194,26 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["title", "relation_type", "read_depth", "similarity_summary", "similarity_level", "evidence"],
-        "additionalProperties": false,
+        "required": ["title", "relation_type", "read_depth", "similarity_summary", "similarity_level", "local_match_status", "used_for_claims", "evidence"],
+        "additionalProperties": true,
         "properties": {
           "title": { "type": "string" },
-          "relation_type": {
-            "enum": ["baseline_in_experiments", "similar_innovation", "transfer_candidate"]
-          },
+          "relation_type": { "enum": ["baseline_in_experiments", "similar_innovation", "transfer_candidate"] },
           "read_depth": { "enum": ["full_read", "targeted_read", "metadata_only"] },
           "similarity_summary": { "type": "string" },
           "similarity_level": { "enum": ["high", "medium", "low", "unclear"] },
           "local_match_status": { "enum": ["matched", "not_found", "retrieval_requested", "not_checked"] },
           "local_path": { "type": ["string", "null"] },
           "used_for_claims": { "type": "array", "items": { "type": "string", "pattern": "^C[0-9]+$" } },
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": { "type": "string", "minLength": 1 }
-          }
+          "evidence": { "type": "array", "minItems": 1, "items": { "type": "string" } }
         }
       }
     },
+    "related_paper_request_path": { "type": ["string", "null"] },
     "validation": {
       "type": "object",
       "required": ["language", "status", "warnings", "missing_sections"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "language": { "const": "zh-CN" },
         "status": { "enum": ["PASS", "WARN", "FAIL"] },
