@@ -185,6 +185,24 @@ python skills\3dgs-paper-batch-orchestrator\scripts\aggregate_reports.py `
 - `references/aggregation-schema.md`
 - `templates/item-task-prompt.md`
 - `templates/batch-summary-template.md`
+
+## Profile Extension
+
+Batch supports two profiles:
+
+- `standard-analysis`: default. Each item asks `3dgs-paper-analyzer` for `Pxxx.md` and standard `Pxxx.json`.
+- `innovation-review`: each item still requires `Pxxx.md` and standard `Pxxx.json`, and additionally asks for `Pxxx.innovation-review.json`.
+
+`status.json` must record the selected `profile`. Aggregation continues to read only standard `Pxxx.json`; innovation-review JSON is additional evidence and must not replace the standard JSON.
+
+Example:
+
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\init_batch.py `
+  --manifest paper-retrieval-output\compression-survey-01\manifest.json `
+  --output-dir paper-batch-output\compression-survey-01 `
+  --profile innovation-review
+```
 - `scripts/init_batch.py`
 - `scripts/build_task.py`
 - `scripts/run_batch.py`

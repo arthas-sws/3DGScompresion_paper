@@ -42,6 +42,49 @@ def extract_title(text: str, fallback: str) -> str:
     return match.group(1).strip() if match else fallback
 
 
+def slugify(value: str) -> str:
+    slug = re.sub(r"\s+", "-", re.sub(r"[^\w\u4e00-\u9fff\s-]", "", value.lower())).strip("-")
+    return slug or "section"
+
+
+def build_nav(source: str) -> str:
+    items: list[str] = []
+    seen: dict[str, int] = {}
+    for match in re.finditer(r"^(#{2,3})\s+(.+?)\s*$", source, re.MULTILINE):
+        level = len(match.group(1))
+        title = match.group(2).strip()
+        base = slugify(title)
+        count = seen.get(base, 0)
+        seen[base] = count + 1
+        anchor = base if count == 0 else f"{base}-{count + 1}"
+        items.append(f'<li class="toc-level-{level}"><a href="#{anchor}">{html.escape(title)}</a></li>')
+    if not items:
+        return ""
+    return '<nav class="toc"><strong>目录</strong><ul>' + "\n".join(items) + "</ul></nav>"
+
+
+def add_heading_ids(body: str) -> str:
+    seen: dict[str, int] = {}
+
+    def repl(match: re.Match[str]) -> str:
+        tag = match.group(1)
+        attrs = match.group(2) or ""
+        title = re.sub(r"<.*?>", "", match.group(3)).strip()
+        if ' id="' in attrs:
+            return match.group(0)
+        base = slugify(html.unescape(title))
+        count = seen.get(base, 0)
+        seen[base] = count + 1
+        anchor = base if count == 0 else f"{base}-{count + 1}"
+        return f"<{tag}{attrs} id=\"{anchor}\">{match.group(3)}</{tag}>"
+
+    return re.sub(r"<(h[2-3])([^>]*)>(.*?)</\1>", repl, body)
+
+
+def wrap_tables(body: str) -> str:
+    return re.sub(r"(<table>.*?</table>)", r'<div class="table-scroll">\1</div>', body, flags=re.DOTALL)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Render a Markdown paper analysis report to HTML.")
     parser.add_argument("input", type=Path)
@@ -62,10 +105,12 @@ def main() -> None:
 
     markdown = load_markdown()
     body = markdown.markdown(source, extensions=["tables", "fenced_code", "sane_lists", "toc"], output_format="html5")
+    body = wrap_tables(add_heading_ids(body))
+    nav = build_nav(source)
     template = args.template.read_text(encoding="utf-8")
     if "{{TITLE}}" not in template or "{{CONTENT}}" not in template:
         raise SystemExit("Template must contain {{TITLE}} and {{CONTENT}}.")
-    result = template.replace("{{TITLE}}", html.escape(extract_title(source, args.input.stem))).replace("{{CONTENT}}", body)
+    result = template.replace("{{TITLE}}", html.escape(extract_title(source, args.input.stem))).replace("{{CONTENT}}", nav + body)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(result, encoding="utf-8")

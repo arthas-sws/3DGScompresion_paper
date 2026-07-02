@@ -1,6 +1,15 @@
 # 3dgs-paper-batch-orchestrator
 
-批量调度 3DGS 论文单篇精读。它读取 retrieval `manifest.json`，为每篇论文生成独立任务包，等待 `3dgs-paper-analyzer` 逐篇产出 Markdown 和 JSON，然后校验、重试并汇总。
+Batch orchestration skill for 3DGS paper analysis. It reads a retrieval `manifest.json`, creates isolated per-paper task prompts, waits for `3dgs-paper-analyzer` outputs, validates them, retries failed items, and aggregates validated standard JSON files.
+
+## Profiles
+
+- `standard-analysis`: default analyzer report.
+- `innovation-review`: asks the analyzer to produce the standard `Pxxx.md` and `Pxxx.json` plus `Pxxx.innovation-review.json`.
+
+Batch aggregation continues to read only standard `Pxxx.json`.
+
+## Usage
 
 ```powershell
 python skills\3dgs-paper-batch-orchestrator\scripts\init_batch.py `
@@ -11,4 +20,13 @@ python skills\3dgs-paper-batch-orchestrator\scripts\run_batch.py `
   --batch-dir paper-batch-output\compression-survey-01
 ```
 
-默认不会假装自动调用 Codex 子任务；未生成单篇报告时状态为 `waiting_for_agent`，并在 `attempts/` 中写入 prompt。
+Innovation-review profile:
+
+```powershell
+python skills\3dgs-paper-batch-orchestrator\scripts\init_batch.py `
+  --manifest paper-retrieval-output\compression-survey-01\manifest.json `
+  --output-dir paper-batch-output\compression-survey-01 `
+  --profile innovation-review
+```
+
+The orchestrator does not pretend to automatically run Codex agents. If an item has no generated report yet, its status is `waiting_for_agent` and the prompt is written under `attempts/`.

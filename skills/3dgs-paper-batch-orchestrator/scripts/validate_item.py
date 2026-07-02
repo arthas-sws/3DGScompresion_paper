@@ -20,16 +20,40 @@ def load_analyzer_validator():
     return module
 
 
+def load_innovation_validator():
+    path = repo_root() / "skills" / "3dgs-paper-analyzer" / "scripts" / "validate_innovation_review.py"
+    spec = importlib.util.spec_from_file_location("validate_innovation_review", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load innovation validator: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def validate_item(batch_dir: Path, paper_id: str) -> dict[str, Any]:
     manifest_path = batch_dir / "manifest.json"
     md_path = batch_dir / "items" / f"{paper_id}.md"
     json_path = batch_dir / "items" / f"{paper_id}.json"
+    status = load_status(batch_dir)
+    profile = str(status.get("profile") or "standard-analysis")
     validator = load_analyzer_validator()
     result = validator.validate(md_path, json_path, manifest_path)
+    if profile == "innovation-review":
+        review_json_path = batch_dir / "items" / f"{paper_id}.innovation-review.json"
+        innovation_validator = load_innovation_validator()
+        innovation_result = innovation_validator.validate(md_path, json_path, review_json_path, manifest_path)
+        result = {
+            "schema_version": "1.0",
+            "paper_id": paper_id,
+            "status": "FAIL" if result.get("status") == "FAIL" or innovation_result.get("status") == "FAIL" else ("WARN" if result.get("status") == "WARN" or innovation_result.get("status") == "WARN" else "PASS"),
+            "errors": result.get("errors", []) + innovation_result.get("errors", []),
+            "warnings": result.get("warnings", []) + innovation_result.get("warnings", []),
+            "standard_report_status": result.get("status"),
+            "innovation_review_status": innovation_result.get("status"),
+        }
     validation_path = batch_dir / "validation" / f"{paper_id}.json"
     write_json(validation_path, result)
 
-    status = load_status(batch_dir)
     state = "validated" if result["status"] == "PASS" else "failed_quality_gate"
     set_item_status(
         status,
@@ -38,6 +62,7 @@ def validate_item(batch_dir: Path, paper_id: str) -> dict[str, Any]:
         validation_path=str(validation_path),
         report_path=str(md_path),
         json_path=str(json_path),
+        innovation_review_path=str(batch_dir / "items" / f"{paper_id}.innovation-review.json") if profile == "innovation-review" else "",
         errors=result.get("errors", []),
         warnings=result.get("warnings", []),
     )

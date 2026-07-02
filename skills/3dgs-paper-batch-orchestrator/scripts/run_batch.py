@@ -17,9 +17,9 @@ from build_task import build_task
 from validate_item import validate_item
 
 
-def run(batch_dir: Path, manifest_path: Path | None = None, max_retries: int = 2) -> None:
+def run(batch_dir: Path, manifest_path: Path | None = None, max_retries: int = 2, profile: str = "standard-analysis") -> None:
     if manifest_path and not (batch_dir / "manifest.json").is_file():
-        init_from_manifest(manifest_path, batch_dir)
+        init_from_manifest(manifest_path, batch_dir, profile=profile)
     ensure_batch_dirs(batch_dir)
     manifest = load_manifest(batch_dir)
     status = load_status(batch_dir)
@@ -54,8 +54,9 @@ def main() -> None:
     parser.add_argument("--batch-dir", type=Path, required=True)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--max-retries", type=int, default=2)
+    parser.add_argument("--profile", choices=["standard-analysis", "innovation-review"], default="standard-analysis")
     args = parser.parse_args()
-    run(args.batch_dir, args.manifest, args.max_retries)
+    run(args.batch_dir, args.manifest, args.max_retries, args.profile)
     print(f"batch checked: {args.batch_dir}")
 
 

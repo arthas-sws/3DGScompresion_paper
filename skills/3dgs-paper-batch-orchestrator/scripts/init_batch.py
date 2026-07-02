@@ -12,6 +12,7 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--batch-id")
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--profile", choices=["standard-analysis", "innovation-review"], default="standard-analysis")
     args = parser.parse_args()
 
     batch_id = args.batch_id
@@ -20,9 +21,9 @@ def main() -> None:
 
         batch_id = str(json.loads(args.manifest.read_text(encoding="utf-8")).get("batch_id") or args.manifest.parent.name)
     output_dir = args.output_dir or Path("paper-batch-output") / batch_id
-    manifest, status = init_from_manifest(args.manifest, output_dir, batch_id)
+    manifest, status = init_from_manifest(args.manifest, output_dir, batch_id, args.profile)
     index = output_dir / "batch-index.md"
-    lines = [f"# Batch {manifest['batch_id']}", "", "| ID | Title | Status |", "|---|---|---|"]
+    lines = [f"# Batch {manifest['batch_id']}", "", f"- Profile: `{args.profile}`", "", "| ID | Title | Status |", "|---|---|---|"]
     for paper in manifest.get("papers", []):
         item = status["items"].get(paper["id"], {})
         lines.append(f"| {paper['id']} | {paper.get('title', '')} | {item.get('status', '')} |")

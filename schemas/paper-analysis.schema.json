@@ -92,6 +92,13 @@
         "warnings": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "properties": {
+        "innovation_review": { "type": "string" }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": true

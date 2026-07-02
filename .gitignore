@@ -10,6 +10,12 @@ paper-batch-output/
 validation/
 retry-prompts/
 
+# Local Codex skill installs and optional paper index data
+.agents/skills/
+.agent-config/
+paper-library/
+paper-index.jsonl
+
 # Temporary files
 tmp/
 *.tmp
