@@ -1,84 +1,60 @@
 # Innovation Review Mode
 
-Use `innovation-review` mode when the user asks to deeply inspect a single 3DGS compression paper's innovation claims, experimental support, similar papers, improvement directions, or supplemental experiment design.
+`innovation-review` is a mode of `3dgs-paper-analyzer`, not a separate skill.
 
-This is a mode of `3dgs-paper-analyzer`, not a separate skill. Always produce the standard analyzer outputs first:
+Always produce:
 
 ```text
+<paper_id>.source-pack.json
 <paper_id>.md
 <paper_id>.json
-```
-
-The standard JSON must continue to follow `schemas/paper-analysis.schema.json` so batch tools can validate and aggregate it. In innovation-review mode, also produce:
-
-```text
 <paper_id>.innovation-review.json
 ```
 
-Set the standard JSON extension pointer:
+The standard JSON follows `schemas/paper-analysis.schema.json` and points to the shared Source Pack and innovation extension:
 
 ```json
 {
+  "source_pack_path": "P001.source-pack.json",
   "extensions": {
+    "source_pack": "P001.source-pack.json",
     "innovation_review": "P001.innovation-review.json"
   }
 }
 ```
 
-## Required Review Content
+The innovation extension follows `schemas/innovation-review.schema.json` schema version `1.1`. Old `1.0` outputs must be migrated explicitly.
 
-- Paper identity and version.
-- Problem definition and compression target.
-- Method framework.
-- Author innovation claims.
-- Independent interpretation for each claim.
-- Paper location and evidence for each claim.
-- Key experiment tables, faithfully preserved.
-- Experiment support level for each claim.
-- Similar papers and similarity scope.
-- Practical differences between the paper and similar papers.
-- Improvement ideas.
-- Proposed supplemental experiments.
-- Reproducibility risks.
-- Conclusion boundaries.
+## Required Structure
 
-Use stable IDs:
+Innovation review must include:
 
-- Claims: `C1`, `C2`, `C3`
-- Tables: `T1`, `T2`, `T3`
+- review card;
+- identity and analysis boundary;
+- review depth;
+- author innovation claims;
+- full Claim cards;
+- Claim-Evidence matrix;
+- key experiment results;
+- evidence gaps;
+- closest prior work;
+- practical differences;
+- prioritized method improvements;
+- supplemental experiments;
+- implementation and reproducibility risks;
+- bounded final conclusion;
+- full experiment table appendix.
 
-## Related Paper Boundary
+## Claim Contract
 
-Do not silently download related papers. Use this order:
+Each Claim must include title, author claim, interpreted mechanism, paper location, code location, evidence IDs, counter-evidence IDs, support level, missing evidence, closest prior work, differentiators, and confidence.
 
-1. Read related work, method discussion, and experiment baselines in the main paper.
-2. Search provided retrieval manifest and local retrieval outputs.
-3. If a key related paper is missing, write an explicit retrieval request list for `paper-retrieval-downloader`.
-4. Download only after the user explicitly agrees.
+## Matrix Contract
 
-Do not create `.agent-config`, `paper-library`, or root `paper-index.jsonl`.
+The Claim-Evidence matrix columns are theory, main results, ablation, efficiency, failure cases, code, and final judgment. Cells are limited to `直接`, `部分`, `间接`, `无`, or `冲突`.
 
-## Novelty Assessment
+## Related Paper Depth
 
-Do not use keyword blacklists or absolute novelty conclusions. Use `novelty_assessment` with bounded evidence:
+Do not silently download related papers. Search local manifests and user-provided files first. If a key paper is missing, write `<paper_id>.related-paper-request.json`.
 
-- It is allowed to say the current checked scope did not find a highly similar method.
-- It is allowed to say evidence is insufficient to support an innovation claim.
-- It is allowed to say a related method is highly similar while listing concrete differentiators.
-- It is not allowed to make source-free absolute conclusions.
-
-## Validation
-
-Run both validators when delivering innovation-review mode:
-
-```powershell
-python skills\3dgs-paper-analyzer\scripts\validate_report.py `
-  --md P001.md `
-  --json P001.json
-
-python skills\3dgs-paper-analyzer\scripts\validate_innovation_review.py `
-  --md P001.md `
-  --json P001.json `
-  --review-json P001.innovation-review.json `
-  --strict
-```
+Set `review_depth` to `preliminary` unless at least one closest paper is `full_read` and at least two important papers are `targeted_read`. Preliminary reviews must not make global absolute novelty conclusions.

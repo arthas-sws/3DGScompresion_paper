@@ -39,17 +39,18 @@ def build_task(batch_dir: Path, paper_id: str) -> Path:
     profile = str(status.get("profile") or "standard-analysis")
     output_md = batch_dir / "items" / f"{paper_id}.md"
     output_json = batch_dir / "items" / f"{paper_id}.json"
+    output_source_pack = batch_dir / "items" / f"{paper_id}.source-pack.json"
     output_review_json = batch_dir / "items" / f"{paper_id}.innovation-review.json"
     if profile == "innovation-review":
         profile_instructions = (
             "Use `3dgs-paper-analyzer` in `innovation-review` mode. "
-            "You must still write the standard Markdown and standard JSON, and additionally write "
+            "Generate or reuse the shared Source Pack first. You must still write the standard Markdown and standard JSON, and additionally write "
             f"`{output_review_json}` following `schemas/innovation-review.schema.json`. "
-            "Set standard JSON `extensions.innovation_review` to the extension JSON filename. "
+            "Set standard JSON `source_pack_path`/`extensions.source_pack` and `extensions.innovation_review`. "
             "Do not download related papers silently; write a retrieval request list if key related PDFs are missing."
         )
     else:
-        profile_instructions = "Use `3dgs-paper-analyzer` in default `standard-analysis` mode."
+        profile_instructions = "Use `3dgs-paper-analyzer` in default `standard-analysis` mode. Generate or reuse the shared Source Pack before writing the report."
     prompt = render_template(
         template,
         {
@@ -64,6 +65,7 @@ def build_task(batch_dir: Path, paper_id: str) -> Path:
             "CODE_URL": str(paper.get("code_url", "")),
             "OUTPUT_MD": str(output_md),
             "OUTPUT_JSON": str(output_json),
+            "OUTPUT_SOURCE_PACK": str(output_source_pack),
             "OUTPUT_REVIEW_JSON": str(output_review_json),
         },
     )

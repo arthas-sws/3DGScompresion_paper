@@ -193,7 +193,23 @@ Batch supports two profiles:
 - `standard-analysis`: default. Each item asks `3dgs-paper-analyzer` for `Pxxx.md` and standard `Pxxx.json`.
 - `innovation-review`: each item still requires `Pxxx.md` and standard `Pxxx.json`, and additionally asks for `Pxxx.innovation-review.json`.
 
-`status.json` must record the selected `profile`. Aggregation continues to read only standard `Pxxx.json`; innovation-review JSON is additional evidence and must not replace the standard JSON.
+Both profiles also require `items/Pxxx.source-pack.json`. This shared Source Pack is validated before the mode-specific outputs. It is an internal fact layer, not a third profile and not an `auto` mode.
+
+Recommended item layout:
+
+```text
+items/P001/
+├── P001.source-pack.json
+├── P001.md
+├── P001.json
+├── P001.innovation-review.json
+├── P001.html
+└── P001.validation.json
+```
+
+The existing flat `items/P001.*` layout remains supported for compatibility. `validate_item.py` checks the flat layout used by current batch scripts.
+
+`status.json` must record the selected `profile`. Aggregation continues to read only standard `Pxxx.json`; Source Pack and innovation-review JSON are additional evidence and must not replace the standard JSON.
 
 Example:
 

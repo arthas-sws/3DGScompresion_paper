@@ -1,42 +1,39 @@
 # Output Profiles
 
-默认使用“中文精读”。用户明确要求时可切换。
+The analyzer supports exactly two report modes: `standard-analysis` and `innovation-review`.
 
-## 中文精读
+## Shared Source Pack
 
-完整保留方法、实验、结果、效率、消融、局限和复现结论。适合复现调研和综述。
+Both modes share `<paper_id>.source-pack.json`. The Source Pack is an internal fact layer, not an `auto` mode and not a third report profile. It contains verified facts only: paper identity, PDF hash, paper version, code commit, evidence ledger, equations, figures, experiment tables, code map, reported limitations, unverified items, and provenance.
 
-## 审稿模式
+Do not store mode-specific prose, final conclusions, innovation judgments, or improvement plans in the Source Pack.
 
-增加：
+Reuse the Source Pack when PDF hash, paper version, code commit, and validation match. If any source changes, mark it stale and re-check affected facts.
 
-- 主要优点；
-- 主要问题；
-- 对作者的问题；
-- 可能拒稿/接收依据；
-- 实验补充建议。
+## standard-analysis
 
-仍必须输出 JSON。
+Use for full technical understanding, method explanation, code mapping, experiment audit, and reproducibility judgment.
 
-## 复现模式
+Main-body result reporting is intentionally selective:
 
-增加：
+- at most one representative quality table;
+- at most one efficiency/cost table;
+- at most one ablation table;
+- roughly ten key numeric observations;
+- complete raw tables belong in Source Pack and appendix.
 
-- 环境依赖；
-- 数据准备；
-- 训练、渲染、评估命令；
-- 论文结果到代码命令的映射；
-- 复现风险。
+Required standard sections include quick judgment, paper/code mapping, paper/code differences, experiment comparability, representative results, cost, limitations, and reproducibility.
 
-仍必须输出 JSON。
+## innovation-review
 
-## 快速速读
+Use for innovation-claim audit, evidence sufficiency, prior work, risk, improvement ideas, and supplemental experiments.
 
-可以压缩篇幅，但不能删除：
+It must not read like a normal paper summary. It must include:
 
-- 核心贡献；
-- 主要结果；
-- 代价；
-- 局限；
-- 未报告项；
-- JSON 结构化结果。
+- `review_depth`: `preliminary` or `deep`;
+- full Claim cards;
+- Claim-Evidence matrix;
+- related-paper depth boundary;
+- prioritized improvement ideas (`P0`, `P1`, `P2`);
+- engineering-ready supplemental experiment designs;
+- complete raw tables in appendix, not as the main body.

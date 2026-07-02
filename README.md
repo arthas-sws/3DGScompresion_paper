@@ -19,7 +19,7 @@ paper-retrieval-downloader
 3dgs-paper-batch-orchestrator
   -> per-paper task prompts and validation
 3dgs-paper-analyzer
-  -> Markdown + standard JSON, with optional innovation-review extension
+  -> Source Pack + Markdown + standard JSON, with optional innovation-review extension
 ```
 
 Single-paper use can call `3dgs-paper-analyzer` directly from a PDF, URL, or manifest entry.
@@ -37,7 +37,8 @@ Single-paper use can call `3dgs-paper-analyzer` directly from a PDF, URL, or man
 - Reviews one paper at a time.
 - Default mode: `standard-analysis`.
 - Optional mode: `innovation-review`.
-- Always produces the standard `Pxxx.md` and `Pxxx.json` pair.
+- Always produces `Pxxx.source-pack.json`, `Pxxx.md`, and `Pxxx.json`.
+- Reuses the Source Pack across both modes when PDF hash, paper version, code commit, and validation match.
 - `Pxxx.json` follows `schemas/paper-analysis.schema.json`.
 - In `innovation-review` mode, also produces `Pxxx.innovation-review.json` following `schemas/innovation-review.schema.json`.
 
@@ -58,6 +59,7 @@ Use for normal single-paper Chinese analysis: method, code, experiments, efficie
 Outputs:
 
 ```text
+P001.source-pack.json
 P001.md
 P001.json
 ```
@@ -79,6 +81,7 @@ Outputs:
 analysis-output/P001/
 +-- P001.md
 +-- P001.json
++-- P001.source-pack.json
 +-- P001.innovation-review.json
 +-- P001.html
 ```
@@ -88,10 +91,13 @@ The standard JSON may include:
 ```json
 {
   "extensions": {
+    "source_pack": "P001.source-pack.json",
     "innovation_review": "P001.innovation-review.json"
   }
 }
 ```
+
+`innovation-review` uses schema version `1.1`, full Claim cards, a Claim-Evidence matrix, `review_depth`, prioritized improvement ideas, and engineering-ready supplemental experiments.
 
 ## Examples
 
@@ -133,11 +139,21 @@ python skills\3dgs-paper-analyzer\scripts\validate_report.py `
   --md analysis-output\P001\P001.md `
   --json analysis-output\P001\P001.json
 
+python skills\3dgs-paper-analyzer\scripts\validate_source_pack.py `
+  --source-pack analysis-output\P001\P001.source-pack.json
+
 python skills\3dgs-paper-analyzer\scripts\validate_innovation_review.py `
   --md analysis-output\P001\P001.md `
   --json analysis-output\P001\P001.json `
   --review-json analysis-output\P001\P001.innovation-review.json `
   --strict
+
+python skills\3dgs-paper-analyzer\scripts\validate_cross_mode_consistency.py `
+  --source-pack analysis-output\P001\P001.source-pack.json `
+  --standard-json analysis-output\P001\standard-analysis\P001.json `
+  --innovation-json analysis-output\P001\innovation-review\P001.json `
+  --review-json analysis-output\P001\innovation-review\P001.innovation-review.json `
+  --output analysis-output\P001\cross-mode-validation.json
 ```
 
 Optional index update:
@@ -180,6 +196,7 @@ Use `--profile standard-analysis` or omit `--profile` for the existing default f
 schemas/
 +-- retrieval-manifest.schema.json
 +-- failures.schema.json
++-- paper-source-pack.schema.json
 +-- paper-analysis.schema.json
 +-- innovation-review.schema.json
 +-- batch-status.schema.json
