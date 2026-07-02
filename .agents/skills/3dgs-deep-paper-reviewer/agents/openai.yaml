@@ -1,0 +1,3 @@
+display_name: 3DGS Deep Paper Reviewer
+short_description: Deep review for 3DGS compression papers.
+default_prompt: Use this skill to deeply review a single 3DGS compression paper PDF, preserve experiment tables, extract innovation claims, list similar papers without novelty judgments, propose improvements and validation experiments, and update paper-index.jsonl.
