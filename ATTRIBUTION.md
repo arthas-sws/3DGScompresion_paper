@@ -9,3 +9,7 @@ by their respective authors and publishers.
 
 The Skill instructions and utility scripts in this repository are released under
 the repository license unless a file states otherwise.
+
+The `innovation-review` mode is repository-authored workflow guidance for
+reviewing user-provided papers. It does not redistribute third-party PDFs or
+claim ownership over paper tables, figures, project pages, or code.

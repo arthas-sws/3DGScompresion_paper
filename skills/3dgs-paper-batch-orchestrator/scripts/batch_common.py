@@ -125,7 +125,17 @@ def locate_analyzer_skill() -> Path | None:
     return None
 
 
-def init_from_manifest(source_manifest: Path, output_dir: Path, batch_id: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+PROFILES = {"standard-analysis", "innovation-review"}
+
+
+def init_from_manifest(
+    source_manifest: Path,
+    output_dir: Path,
+    batch_id: str | None = None,
+    profile: str = "standard-analysis",
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if profile not in PROFILES:
+        raise ValueError(f"unknown profile: {profile}")
     source_manifest = source_manifest.resolve()
     source_dir = source_manifest.parent
     manifest = read_json(source_manifest)
@@ -137,7 +147,7 @@ def init_from_manifest(source_manifest: Path, output_dir: Path, batch_id: str | 
     rewritten["batch_id"] = batch_id
     rewritten["source_manifest"] = str(source_manifest)
     papers = []
-    status = {"schema_version": "1.0", "batch_id": batch_id, "updated_at": utc_now_iso(), "items": {}}
+    status = {"schema_version": "1.0", "batch_id": batch_id, "profile": profile, "updated_at": utc_now_iso(), "items": {}}
     for paper in manifest.get("papers", []):
         if not isinstance(paper, dict):
             continue
@@ -158,6 +168,7 @@ def init_from_manifest(source_manifest: Path, output_dir: Path, batch_id: str | 
             attempts=0,
             report_path=f"items/{paper_id}.md",
             json_path=f"items/{paper_id}.json",
+            innovation_review_path=f"items/{paper_id}.innovation-review.json" if profile == "innovation-review" else "",
             errors=[] if pdf_exists else [f"missing PDF: {item.get('local_pdf', '')}"],
             warnings=[],
         )

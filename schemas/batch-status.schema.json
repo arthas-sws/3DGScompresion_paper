@@ -3,10 +3,11 @@
   "$id": "https://example.local/3dgs/batch-status.schema.json",
   "title": "3DGS Batch Analysis Status",
   "type": "object",
-  "required": ["schema_version", "batch_id", "updated_at", "items"],
+  "required": ["schema_version", "batch_id", "profile", "updated_at", "items"],
   "properties": {
     "schema_version": { "const": "1.0" },
     "batch_id": { "type": "string", "minLength": 1 },
+    "profile": { "enum": ["standard-analysis", "innovation-review"] },
     "updated_at": { "type": "string", "minLength": 1 },
     "items": {
       "type": "object",
@@ -33,6 +34,7 @@
           "last_attempt": { "type": "string" },
           "report_path": { "type": "string" },
           "json_path": { "type": "string" },
+          "innovation_review_path": { "type": "string" },
           "validation_path": { "type": "string" },
           "warnings": { "type": "array", "items": { "type": "string" } },
           "errors": { "type": "array", "items": { "type": "string" } }

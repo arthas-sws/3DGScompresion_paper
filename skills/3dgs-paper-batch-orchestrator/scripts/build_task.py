@@ -36,11 +36,25 @@ def build_task(batch_dir: Path, paper_id: str) -> Path:
     attempt = next_attempt(batch_dir, paper_id)
     template_path = Path(__file__).resolve().parents[1] / "templates" / "item-task-prompt.md"
     template = template_path.read_text(encoding="utf-8")
+    profile = str(status.get("profile") or "standard-analysis")
     output_md = batch_dir / "items" / f"{paper_id}.md"
     output_json = batch_dir / "items" / f"{paper_id}.json"
+    output_review_json = batch_dir / "items" / f"{paper_id}.innovation-review.json"
+    if profile == "innovation-review":
+        profile_instructions = (
+            "Use `3dgs-paper-analyzer` in `innovation-review` mode. "
+            "You must still write the standard Markdown and standard JSON, and additionally write "
+            f"`{output_review_json}` following `schemas/innovation-review.schema.json`. "
+            "Set standard JSON `extensions.innovation_review` to the extension JSON filename. "
+            "Do not download related papers silently; write a retrieval request list if key related PDFs are missing."
+        )
+    else:
+        profile_instructions = "Use `3dgs-paper-analyzer` in default `standard-analysis` mode."
     prompt = render_template(
         template,
         {
+            "PROFILE": profile,
+            "PROFILE_INSTRUCTIONS": profile_instructions,
             "PAPER_ID": paper_id,
             "TITLE": str(paper.get("title", "")),
             "AUTHORS": ", ".join(paper.get("authors", [])),
@@ -50,6 +64,7 @@ def build_task(batch_dir: Path, paper_id: str) -> Path:
             "CODE_URL": str(paper.get("code_url", "")),
             "OUTPUT_MD": str(output_md),
             "OUTPUT_JSON": str(output_json),
+            "OUTPUT_REVIEW_JSON": str(output_review_json),
         },
     )
     prompt = f"Analyzer skill: {analyzer}\n\n" + prompt
