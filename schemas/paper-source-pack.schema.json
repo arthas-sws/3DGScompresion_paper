@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/arthas-sws/3DGScompresion_paper/schemas/paper-source-pack.schema.json",
+  "title": "3DGS Paper Source Pack",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "paper",
+    "source_boundary",
+    "evidence_ledger",
+    "equations",
+    "figures",
+    "experiment_tables",
+    "code_map",
+    "reported_limitations",
+    "unverified_items",
+    "provenance"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "paper": {
+      "type": "object",
+      "required": ["id", "title", "pdf_path", "pdf_hash"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "pattern": "^P[0-9]{3,}$" },
+        "title": { "type": "string", "minLength": 1 },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "arxiv_id": { "type": ["string", "null"] },
+        "source_url": { "type": ["string", "null"] },
+        "pdf_path": { "type": "string", "minLength": 1 },
+        "pdf_hash": { "type": "string", "pattern": "^[A-Fa-f0-9]{32,128}$" },
+        "paper_version": { "type": ["string", "null"] },
+        "code_url": { "type": ["string", "null"] },
+        "code_commit": { "type": ["string", "null"] }
+      }
+    },
+    "source_boundary": {
+      "type": "object",
+      "required": ["paper", "supplement", "project_page", "official_code", "related_papers"],
+      "additionalProperties": true,
+      "properties": {
+        "paper": { "type": "string" },
+        "supplement": { "type": "string" },
+        "project_page": { "type": "string" },
+        "official_code": { "type": "string" },
+        "related_papers": { "type": "string" }
+      }
+    },
+    "evidence_ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["evidence_id", "source_type", "location", "summary", "verification_status", "source_path_or_url", "source_version"],
+        "additionalProperties": true,
+        "properties": {
+          "evidence_id": { "type": "string", "pattern": "^E[0-9]{3,}$" },
+          "source_type": { "enum": ["paper", "supplement", "project_page", "official_code"] },
+          "location": { "type": "string", "minLength": 1 },
+          "page": { "type": ["integer", "string", "null"] },
+          "summary": { "type": "string" },
+          "verification_status": { "enum": ["verified", "partial", "unverified"] },
+          "source_path_or_url": { "type": "string" },
+          "source_version": { "type": "string" }
+        }
+      }
+    },
+    "equations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["equation_id", "location", "latex", "evidence_ids"],
+        "additionalProperties": true,
+        "properties": {
+          "equation_id": { "type": "string", "pattern": "^Q[0-9]+$" },
+          "location": { "type": "string" },
+          "latex": { "type": "string" },
+          "evidence_ids": { "type": "array", "items": { "type": "string", "pattern": "^E[0-9]{3,}$" } }
+        }
+      }
+    },
+    "figures": { "type": "array" },
+    "experiment_tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["table_id", "caption", "source", "columns", "rows", "extraction_method", "verification_status", "uncertain_cells", "comparability"],
+        "additionalProperties": true,
+        "properties": {
+          "table_id": { "type": "string", "pattern": "^T[0-9]+$" },
+          "caption": { "type": "string" },
+          "source": { "type": "string", "minLength": 1 },
+          "source_page": { "type": ["integer", "string", "null"] },
+          "columns": { "type": "array", "items": { "type": "string" } },
+          "rows": { "type": "array", "items": { "type": "object" } },
+          "extraction_method": { "enum": ["automatic", "manual_transcription", "mixed"] },
+          "verification_status": { "enum": ["verified", "partial", "unverified"] },
+          "uncertain_cells": { "type": "array", "items": { "type": "string" } },
+          "comparability": { "type": "string" },
+          "evidence_ids": { "type": "array", "items": { "type": "string", "pattern": "^E[0-9]{3,}$" } }
+        }
+      }
+    },
+    "code_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mapping_id", "paper_component", "paper_location", "code_location", "mapping_level", "differences", "evidence_ids"],
+        "additionalProperties": true,
+        "properties": {
+          "mapping_id": { "type": "string", "pattern": "^M[0-9]+$" },
+          "paper_component": { "type": "string" },
+          "paper_location": { "type": "array", "items": { "type": "string" } },
+          "code_location": { "type": "array", "items": { "type": "string" } },
+          "mapping_level": { "enum": ["direct", "partial", "external_dependency", "not_found"] },
+          "differences": { "type": "array", "items": { "type": ["string", "object"] } },
+          "evidence_ids": { "type": "array", "items": { "type": "string", "pattern": "^E[0-9]{3,}$" } }
+        }
+      }
+    },
+    "reported_limitations": { "type": "array", "items": { "type": ["string", "object"] } },
+    "unverified_items": { "type": "array", "items": { "type": ["string", "object"] } },
+    "provenance": {
+      "type": "object",
+      "required": ["created_at", "generator", "pdf_hash", "paper_version", "code_commit", "stale"],
+      "additionalProperties": true,
+      "properties": {
+        "created_at": { "type": "string" },
+        "generator": { "type": "string" },
+        "pdf_hash": { "type": "string", "pattern": "^[A-Fa-f0-9]{32,128}$" },
+        "paper_version": { "type": ["string", "null"] },
+        "code_commit": { "type": ["string", "null"] },
+        "stale": { "type": "boolean" },
+        "stale_reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
