@@ -1,43 +1,28 @@
 # Result Reporting
 
-## Markdown 必备结果表
+## Source Pack First
 
-```markdown
-| 数据集 | 场景 | 指标 | 本文方法 | baseline | 差值 | 趋势 | 可比性 | 证据 | 说明 |
-|---|---|---:|---:|---:|---:|---|---|---|---|
-```
+Extract full experiment tables once into Source Pack. Standard reports quote representative rows only. Innovation reports show claim-relevant rows in the main body and reserve complete raw tables for the appendix and JSON evidence.
 
-每行必须能映射到 JSON 的 `analysis.main_results`。
+`analysis.main_results` in standard JSON should hold representative results, not every raw cell. Full rows belong to `source_pack.experiment_tables`.
 
-## 效率与代价
+## Standard Main Body
 
-单独汇总：
+The standard Markdown main body should include:
 
-- 渲染 FPS 或延迟；
-- 训练时间；
-- 显存；
-- 模型大小；
-- Gaussian 数量；
-- 编码、解码或预处理代价。
+- one representative quality result table;
+- one efficiency/cost table;
+- one ablation table;
+- no more than about ten key numeric observations.
 
-未报告项显式写“论文未报告”。
+## Innovation Main Body
 
-## 消融
+The innovation Markdown main body should include:
 
-每个消融项记录：
+- rows directly tied to Claims;
+- core comparisons;
+- key ablations;
+- failure points;
+- a folded or appendix section for complete raw tables.
 
-- 组件名称；
-- 移除或替换方式；
-- 影响的指标；
-- 证据位置；
-- 该实验是否真正隔离变量。
-
-## 结论边界
-
-结果分析必须回答：
-
-- 实验证明了什么；
-- 尚未证明什么；
-- 提升是否稳定；
-- 代价是什么；
-- 哪些比较不可直接比较。
+Do not recompute numbers unless the paper explicitly reports the derived value.

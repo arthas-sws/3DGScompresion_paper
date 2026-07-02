@@ -1,38 +1,30 @@
 # Evidence Policy
 
-## 证据等级
+## Evidence Types
 
-- A：论文表格、公式、图、附录或官方代码直接支持；
-- B：项目主页、官方 README、官方 release 支持；
-- C：第三方实现或复现实验支持，必须标注非官方；
-- D：独立判断，只能作为分析，不得写成事实；
-- U：未知、冲突或无法核实。
+Separate four kinds of statements:
 
-## 必须记录位置
+- author claim: what the paper, project page, or README claims;
+- direct evidence: equations, figures, tables, appendix, or official code;
+- independent judgment: analysis derived from evidence;
+- uncertainty: missing, conflicting, or unverifiable information.
 
-所有关键数字、公式解释、代码映射、baseline 公平性和局限结论都要给出位置。
+Do not turn author claims into verified facts.
 
-可用位置格式：
+## Source Pack Evidence Ledger
 
-- `Sec. 3.1`
-- `Eq. 4`
-- `Table 2`
-- `Fig. 5`
-- `Supplement p. 8`
-- `models/gaussian_model.py::densify_and_prune`
+Every reusable fact should be recorded once in `<paper_id>.source-pack.json` with a stable ID such as `E001`.
 
-## 数字记录
+Evidence IDs, table IDs, and code mapping IDs must be unique. Markdown and mode-specific JSON may cite these IDs but must not create a second conflicting transcription of the same table, code commit, paper version, or metric value.
 
-记录数字时同步写清：
+If a fact is not verified, keep it in `unverified_items` or mark its `verification_status` as `partial` or `unverified`.
 
-- 数据集和场景；
-- 指标和方向；
-- 本文值和 baseline 值；
-- 差值是否由论文直接给出；
-- 可比性标签；
-- 证据位置；
-- 缺失或冲突说明。
+## Required Evidence
 
-## 不确定信息
+Evidence is required for:
 
-无法核实时不要删除该项。写入 Markdown，并在 JSON 的 `warnings`、`limitations` 或对应结果 `notes` 中记录。
+- core method mechanisms;
+- PSNR, SSIM, LPIPS, FPS, MB, GB, training time, rendering time, and similar numbers;
+- code mapping;
+- baseline comparability;
+- limitations, failure cases, and reproducibility risks.

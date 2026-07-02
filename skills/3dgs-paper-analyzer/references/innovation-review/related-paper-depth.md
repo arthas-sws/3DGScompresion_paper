@@ -2,33 +2,18 @@
 
 Related papers support interpretation and improvement ideas. They do not replace the main paper review.
 
-## Relation Types
-
-- `baseline_in_experiments`: a method compared in the main paper experiments.
-- `similar_innovation`: a paper with a similar compression idea, representation, coding method, training strategy, or evaluation goal.
-- `transfer_candidate`: a paper outside 3DGS compression whose idea may transfer into 3DGS compression.
-
 ## Read Depth
 
-### full_read
+- `full_read`: abstract, introduction, method, experiments, ablations, limitations, and key tables.
+- `targeted_read`: abstract, relevant method subsection, relevant experiment table or ablation, and needed setup details.
+- `metadata_only`: title, year, link, why it was mentioned, and relation type only.
 
-Use for closest related papers or central baselines. Read abstract, introduction, method, experiments, ablations, limitations, and key tables.
+## Review Depth Gate
 
-### targeted_read
+Set the whole review to `preliminary` unless the related-paper evidence meets deep-review requirements. Deep review requires at least one closest related paper with `full_read` and at least two important related papers with `targeted_read`.
 
-Use for a paper that answers one specific question. Read abstract, relevant method subsection, relevant experiment table or ablation, and needed setup details.
-
-Examples:
-
-- Check whether a quantization mechanism resembles the main paper's module.
-- Check whether a baseline includes decoder size in reported model size.
-- Check whether a rate-distortion setting is comparable.
-- Check whether a NeRF or transmission idea could transfer into 3DGS compression.
-
-### metadata_only
-
-Use for weakly related papers. Record title, year, link, why it was mentioned, and relation type. Do not use metadata-only papers as core evidence for strong technical judgments.
+If the gate is not met, list missing related papers and avoid global novelty conclusions.
 
 ## Retrieval Boundary
 
-Search existing manifests and local retrieval outputs first. If a key PDF is absent, generate a retrieval request for `paper-retrieval-downloader` instead of downloading silently.
+Search existing manifests and local retrieval outputs first. If a key PDF is absent, generate `<paper_id>.related-paper-request.json` with title, reason, required depth, and target claims. Do not download silently.

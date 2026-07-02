@@ -6,6 +6,9 @@
   "required": ["schema_version", "paper", "analysis", "validation"],
   "properties": {
     "schema_version": { "const": "1.0" },
+    "analysis_mode": { "enum": ["standard-analysis", "innovation-review"] },
+    "source_pack_path": { "type": "string" },
+    "source_pack": { "type": "string" },
     "paper": {
       "type": "object",
       "required": ["id", "title", "authors", "source_url", "pdf_path"],
@@ -96,7 +99,8 @@
     "extensions": {
       "type": "object",
       "properties": {
-        "innovation_review": { "type": "string" }
+        "innovation_review": { "type": "string" },
+        "source_pack": { "type": "string" }
       },
       "additionalProperties": true
     }
