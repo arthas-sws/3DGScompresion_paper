@@ -13,18 +13,18 @@ Improvement ideas must be concrete, tied to innovation claims, and testable.
 
 Each improvement idea must include:
 
-- `idea`: concise description.
-- `category`: one of the categories above.
-- `targets_claim`: claim ID or `general`.
-- `motivation`: why the paper evidence suggests this.
-- `expected_benefit`: expected quality, size, speed, robustness, or reproducibility benefit.
-- `risk`: what could fail.
-- `experiment_to_validate`: concrete validation experiment.
-- `evidence_basis`: paper section, table, figure, related paper, or independent judgment.
+- `idea`
+- `category`
+- `targets_claim`
+- `motivation`
+- `expected_benefit`
+- `risk`
+- `experiment_to_validate`
+- `evidence_basis`
 
 ## Proposed Experiments
 
-Each proposed experiment must bind to a claim:
+Each proposed experiment must bind to a claim and include:
 
 - `claim_id`
 - `missing_or_weak_evidence`
