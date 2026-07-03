@@ -27,6 +27,9 @@ class BatchSourcePackIntegrationTest(unittest.TestCase):
             prompt = next((batch_dir / "attempts").glob("P001.attempt-*.prompt.md")).read_text(encoding="utf-8")
             self.assertIn("P001.source-pack.json", prompt)
             self.assertIn("Source Pack", prompt)
+            self.assertIn("P001.html", prompt)
+            self.assertIn("P001.validation.json", prompt)
+            self.assertIn("_work", prompt)
 
 
 if __name__ == "__main__":

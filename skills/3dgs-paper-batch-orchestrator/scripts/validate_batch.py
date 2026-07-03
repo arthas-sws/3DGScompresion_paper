@@ -23,6 +23,14 @@ def validate(batch_dir: Path) -> dict[str, object]:
                 errors.append(f"validated item missing Markdown: {paper_id}")
             if not (batch_dir / "items" / f"{paper_id}.json").is_file():
                 errors.append(f"validated item missing JSON: {paper_id}")
+            html_path = batch_dir / "items" / f"{paper_id}.html"
+            if not html_path.is_file() or html_path.stat().st_size == 0:
+                errors.append(f"validated item missing or empty HTML: {paper_id}")
+            validation_path = batch_dir / "items" / f"{paper_id}.validation.json"
+            if not validation_path.is_file():
+                errors.append(f"validated item missing validation JSON: {paper_id}")
+            elif read_json(validation_path).get("completion_status") not in {"COMPLETE", "COMPLETE_WITH_WARNINGS"}:
+                errors.append(f"validated item does not have successful finalization: {paper_id}")
 
     matrix_path = batch_dir / "result-matrix.json"
     if matrix_path.is_file():

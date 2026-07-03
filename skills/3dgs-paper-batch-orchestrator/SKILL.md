@@ -195,6 +195,15 @@ Batch supports two profiles:
 
 Both profiles also require `items/Pxxx.source-pack.json`. This shared Source Pack is validated before the mode-specific outputs. It is an internal fact layer, not a third profile and not an `auto` mode.
 
+Both profiles require analyzer finalization artifacts:
+
+- `items/Pxxx.html`
+- `items/Pxxx.validation.json`
+
+`validated` may only be set after `3dgs-paper-analyzer/scripts/finalize_report.py` returns `COMPLETE` or `COMPLETE_WITH_WARNINGS`. If HTML is missing, empty, or invalid, if `Pxxx.validation.json` is missing, or if any validator reports `FAIL`, the item must stay `failed_quality_gate` and must not be aggregated.
+
+Internal work materials belong under `_work/`. `_work/` is not a delivery artifact, is not checked for completeness, and is not read by aggregation.
+
 Recommended item layout:
 
 ```text

@@ -13,6 +13,41 @@ ANALYZER = ROOT / "skills" / "3dgs-paper-analyzer" / "scripts"
 
 
 class BatchValidationTest(unittest.TestCase):
+    def make_batch_with_validated_item(self, temp: Path) -> Path:
+        batch_dir = temp / "batch"
+        (batch_dir / "items").mkdir(parents=True)
+        manifest = {
+            "schema_version": "1.0",
+            "batch_id": "batch-test",
+            "created_at": "2026-07-01T00:00:00Z",
+            "query": {"keywords": ["test"], "date_from": None, "date_to": None},
+            "papers": [{"id": "P001", "title": "Test Paper", "authors": ["A"], "arxiv_id": "2403.17888", "source_url": "https://arxiv.org/abs/2403.17888", "pdf_url": "", "local_pdf": "papers/P001.pdf", "download_status": "downloaded", "metadata_status": "complete"}],
+        }
+        status = {"schema_version": "1.0", "batch_id": "batch-test", "profile": "standard-analysis", "items": {"P001": {"status": "validated"}}}
+        (batch_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        (batch_dir / "status.json").write_text(json.dumps(status), encoding="utf-8")
+        (batch_dir / "items" / "P001.md").write_text("# Test", encoding="utf-8")
+        (batch_dir / "items" / "P001.json").write_text("{}", encoding="utf-8")
+        (batch_dir / "items" / "P001.html").write_text("<!DOCTYPE html><html>Test</html>", encoding="utf-8")
+        (batch_dir / "items" / "P001.validation.json").write_text(json.dumps({"completion_status": "COMPLETE"}), encoding="utf-8")
+        return batch_dir
+
+    def test_validated_item_missing_html_fails_batch_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            batch_dir = self.make_batch_with_validated_item(Path(tmp))
+            (batch_dir / "items" / "P001.html").unlink()
+            result = subprocess.run([sys.executable, str(BATCH / "validate_batch.py"), "--batch-dir", str(batch_dir)], cwd=ROOT, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing or empty HTML", result.stdout)
+
+    def test_validated_item_missing_validation_json_fails_batch_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            batch_dir = self.make_batch_with_validated_item(Path(tmp))
+            (batch_dir / "items" / "P001.validation.json").unlink()
+            result = subprocess.run([sys.executable, str(BATCH / "validate_batch.py"), "--batch-dir", str(batch_dir)], cwd=ROOT, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing validation JSON", result.stdout)
+
     def test_batch_aggregates_only_validated_items(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             temp = Path(tmp)
