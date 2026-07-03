@@ -104,6 +104,92 @@ def table_count(md_text: str) -> int:
     return sum(1 for line in md_text.splitlines() if re.match(r"^\s*\|.*\|\s*$", line))
 
 
+def extract_sections(md_text: str) -> dict[str, str]:
+    sections: dict[str, list[str]] = {"__preamble__": []}
+    current = "__preamble__"
+    for line in md_text.splitlines():
+        match = re.match(r"^(##)\s+(.+?)\s*$", line)
+        if match:
+            current = match.group(2).strip()
+            sections.setdefault(current, [])
+        sections.setdefault(current, []).append(line)
+    return {key: "\n".join(value) for key, value in sections.items()}
+
+
+def extract_table_blocks(section_text: str) -> list[list[str]]:
+    blocks: list[list[str]] = []
+    current: list[str] = []
+    for line in section_text.splitlines():
+        if re.match(r"^\s*\|.*\|\s*$", line):
+            current.append(line.strip())
+        elif current:
+            blocks.append(current)
+            current = []
+    if current:
+        blocks.append(current)
+    return blocks
+
+
+def is_table_separator(line: str) -> bool:
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells)
+
+
+def count_table_data_rows(table_block: list[str]) -> int:
+    rows = 0
+    seen_separator = False
+    for idx, line in enumerate(table_block):
+        if is_table_separator(line):
+            seen_separator = True
+            continue
+        if idx == 0 and (len(table_block) > 1 and is_table_separator(table_block[1])):
+            continue
+        if seen_separator or idx > 0:
+            rows += 1
+    return rows
+
+
+def section_by_number(sections: dict[str, str], number: int) -> tuple[str, str] | None:
+    pattern = re.compile(rf"^{number}\s*[\.\u3001]")
+    for title, text in sections.items():
+        if pattern.search(title):
+            return title, text
+    return None
+
+
+def validate_standard_section_tables(md_text: str) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    sections = extract_sections(md_text)
+
+    specs = {
+        9: ("representative results", 1, 10, "error"),
+        10: ("efficiency/cost", 1, 10, "warn_11_15"),
+        11: ("ablation/failure/sensitivity", 1, 10, "warn"),
+    }
+    for number, (label, max_tables, max_rows, overflow) in specs.items():
+        match = section_by_number(sections, number)
+        if not match:
+            continue
+        title, text = match
+        tables = extract_table_blocks(text)
+        data_rows = [count_table_data_rows(table) for table in tables]
+        if len(tables) > max_tables:
+            errors.append(f"section {number} {label} has too many main tables: {len(tables)} > {max_tables}")
+        for idx, rows in enumerate(data_rows, start=1):
+            if number == 9 and rows > max_rows:
+                errors.append(f"section {number} {label} table {idx} has too many data rows: {rows} > {max_rows}")
+            elif number == 10 and rows > 15:
+                errors.append(f"section {number} {label} table {idx} appears to copy a full raw table: {rows} data rows")
+            elif number == 10 and rows > max_rows:
+                warnings.append(f"section {number} {label} table {idx} is large: {rows} data rows")
+            elif number == 11 and rows > 15:
+                errors.append(f"section {number} {label} table {idx} appears to copy multiple raw tables: {rows} data rows")
+            elif number == 11 and rows > max_rows:
+                warnings.append(f"section {number} {label} table {idx} is large: {rows} data rows")
+    return errors, warnings
+
+
 def result_reference_exists(result: dict[str, Any], source_pack: dict[str, Any] | None) -> bool:
     if not source_pack:
         return True
@@ -184,8 +270,10 @@ def validate(md_path: Path, json_path: Path, manifest_path: Path | None = None) 
             errors.append(f"quick judgment card missing field: {field}")
     if analysis_mode == "standard-analysis" and (CLAIM_MATRIX_RE.search(md_text) or "| 作者主张 |" in md_text):
         errors.append("standard-analysis must not contain innovation Claim card or Claim-Evidence matrix structure")
-    if analysis_mode == "standard-analysis" and table_count(md_text) > 18:
-        errors.append("standard Markdown appears to repeat too many full table rows; keep full tables in Source Pack or appendix")
+    if analysis_mode == "standard-analysis":
+        table_errors, table_warnings = validate_standard_section_tables(md_text)
+        errors.extend(table_errors)
+        warnings.extend(table_warnings)
 
     main_results = analysis.get("main_results", [])
     if not isinstance(main_results, list):
