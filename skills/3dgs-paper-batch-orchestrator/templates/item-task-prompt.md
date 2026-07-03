@@ -33,6 +33,9 @@
 - Markdown: {{OUTPUT_MD}}
 - JSON: {{OUTPUT_JSON}}
 - Innovation review JSON: {{OUTPUT_REVIEW_JSON}}
+- HTML: same output directory, `{{PAPER_ID}}.html`
+- Validation JSON: same output directory, `{{PAPER_ID}}.validation.json`
+- Internal work materials: same output directory, `_work/`
 
 ## 必须完成
 
@@ -43,4 +46,6 @@
 5. innovation-review 必须使用完整 Claim 卡片、Claim-Evidence 矩阵、review_depth、改进优先级和工程化补充实验。
 6. 标准 JSON 设置 `source_pack_path` 或 `extensions.source_pack` 指向 `{{OUTPUT_SOURCE_PACK}}`。
 7. innovation-review profile 额外遵循 `schemas/innovation-review.schema.json`。
-8. 完成后运行对应 validator，或等待 batch 质量门槛校验。
+8. 完成后必须运行 `finalize_report.py`；只有 `COMPLETE` 或 `COMPLETE_WITH_WARNINGS` 才能视为完成。
+9. `{{PAPER_ID}}.html` 和 `{{PAPER_ID}}.validation.json` 是正式交付物；HTML 缺失或 validator FAIL 时不得汇报完成。
+10. fulltext、tables、official_code、日志等工作材料必须放入 `_work/`；`_work/` 不参与 batch 汇总。

@@ -41,23 +41,38 @@ The two modes may share facts, evidence IDs, tables, code mappings, limitations,
 
 ## Outputs
 
-Both modes write:
+`standard-analysis` must write:
 
 ```text
 <paper_id>.source-pack.json
 <paper_id>.md
 <paper_id>.json
+<paper_id>.html
+<paper_id>.validation.json
 ```
 
 `<paper_id>.json` follows `schemas/paper-analysis.schema.json` and must include `source_pack_path` or `extensions.source_pack`.
 
-`innovation-review` additionally writes:
+`innovation-review` must write:
 
 ```text
+<paper_id>.source-pack.json
+<paper_id>.md
+<paper_id>.json
 <paper_id>.innovation-review.json
+<paper_id>.html
+<paper_id>.validation.json
 ```
 
 following `schemas/innovation-review.schema.json` schema version `1.1`.
+
+HTML is a required delivery artifact, not an optional rendering step. Internal working materials such as full text extraction, table extraction, cloned code, screenshots, and logs must go under:
+
+```text
+<output-dir>/_work/
+```
+
+`_work/` is not a formal delivery artifact, must not be used for batch aggregation, and must not be counted when checking delivery completeness.
 
 ## standard-analysis Contract
 
@@ -134,7 +149,31 @@ Supplemental experiments must include goal, hypothesis, independent variables, b
 
 ## Validation
 
-Run the relevant validators before delivery:
+Finalize every report before delivery:
+
+1. Generate or reuse Source Pack, Markdown, and JSON.
+2. Run the relevant validators.
+3. Save `<paper_id>.validation.json`.
+4. Only if validation has no FAIL, generate `<paper_id>.html`.
+5. Check HTML exists, is non-empty, contains HTML markup, includes the report title and table of contents, and wraps tables in `table-scroll`.
+6. Only then report `COMPLETE` or `COMPLETE_WITH_WARNINGS`.
+
+Use the unified finalization script:
+
+```powershell
+python skills\3dgs-paper-analyzer\scripts\finalize_report.py --mode standard-analysis --paper-id P001 --output-dir analysis-output\P001
+python skills\3dgs-paper-analyzer\scripts\finalize_report.py --mode innovation-review --paper-id P001 --output-dir analysis-output\P001 --strict
+```
+
+Completion states:
+
+- `COMPLETE`: all required files exist, Source Pack PASS, report validator PASS, innovation strict validator PASS when applicable, HTML generated and non-empty.
+- `COMPLETE_WITH_WARNINGS`: no FAIL, at least one WARN, HTML generated and non-empty; the final response must list warnings.
+- `INCOMPLETE`: any FAIL, missing JSON/Markdown/Source Pack, missing or empty HTML, missing validation JSON, or failed innovation strict validation.
+
+Do not report a task as complete while any validator still FAILs or HTML is missing.
+
+The underlying validators are:
 
 ```powershell
 python skills\3dgs-paper-analyzer\scripts\validate_source_pack.py --source-pack P001.source-pack.json

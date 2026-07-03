@@ -19,7 +19,7 @@ paper-retrieval-downloader
 3dgs-paper-batch-orchestrator
   -> per-paper task prompts and validation
 3dgs-paper-analyzer
-  -> Source Pack + Markdown + standard JSON, with optional innovation-review extension
+  -> Source Pack + Markdown + JSON + validation JSON + HTML, with optional innovation-review extension
 ```
 
 Single-paper use can call `3dgs-paper-analyzer` directly from a PDF, URL, or manifest entry.
@@ -37,7 +37,7 @@ Single-paper use can call `3dgs-paper-analyzer` directly from a PDF, URL, or man
 - Reviews one paper at a time.
 - Default mode: `standard-analysis`.
 - Optional mode: `innovation-review`.
-- Always produces `Pxxx.source-pack.json`, `Pxxx.md`, and `Pxxx.json`.
+- Always produces `Pxxx.source-pack.json`, `Pxxx.md`, `Pxxx.json`, `Pxxx.html`, and `Pxxx.validation.json`.
 - Reuses the Source Pack across both modes when PDF hash, paper version, code commit, and validation match.
 - `Pxxx.json` follows `schemas/paper-analysis.schema.json`.
 - In `innovation-review` mode, also produces `Pxxx.innovation-review.json` following `schemas/innovation-review.schema.json`.
@@ -62,6 +62,8 @@ Outputs:
 P001.source-pack.json
 P001.md
 P001.json
+P001.html
+P001.validation.json
 ```
 
 ### innovation-review
@@ -84,6 +86,7 @@ analysis-output/P001/
 +-- P001.source-pack.json
 +-- P001.innovation-review.json
 +-- P001.html
++-- P001.validation.json
 ```
 
 The standard JSON may include:
@@ -117,6 +120,24 @@ python skills\paper-retrieval-downloader\scripts\download.py `
 ```
 
 ### Standard Single-Paper Analysis
+
+Recommended current request shape:
+
+```text
+请使用 $3dgs-paper-analyzer 的 standard-analysis 模式。
+
+输入 PDF：
+paper-retrieval-output/compression-survey-01/papers/P001.pdf
+
+输出目录：
+analysis-output/P001
+```
+
+The analyzer must read the paper, generate or reuse the Source Pack, generate
+Markdown and JSON, run finalization, save `P001.validation.json`, render
+`P001.html`, check delivery completeness, and report `COMPLETE`,
+`COMPLETE_WITH_WARNINGS`, or `INCOMPLETE`. Users do not need to separately ask
+for HTML.
 
 ```text
 使用 3dgs-paper-analyzer 的 standard-analysis 模式，
@@ -168,13 +189,24 @@ No root `paper-index.jsonl` is created unless `--index` is explicitly provided.
 
 ### HTML Rendering
 
+Use finalization for delivery:
+
+```powershell
+python skills\3dgs-paper-analyzer\scripts\finalize_report.py `
+  --mode standard-analysis `
+  --paper-id P001 `
+  --output-dir analysis-output\P001
+```
+
 ```powershell
 python skills\3dgs-paper-analyzer\scripts\render_html.py `
   analysis-output\P001\P001.md `
   analysis-output\P001\P001.html
 ```
 
-The renderer supports table rendering, heading navigation, wide-table horizontal scrolling, Mermaid blocks, and MathJax formulas.
+`finalize_report.py` calls the renderer after validation succeeds. The renderer supports table rendering, heading navigation, wide-table horizontal scrolling, Mermaid blocks, and MathJax formulas.
+
+Internal fulltext/table dumps, cloned official code, screenshots, and other work materials belong under `<output-dir>/_work/`; they are not delivery artifacts.
 
 ### Batch Profiles
 

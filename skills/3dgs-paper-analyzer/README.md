@@ -29,6 +29,8 @@ Every mode writes:
 P001.source-pack.json
 P001.md
 P001.json
+P001.html
+P001.validation.json
 ```
 
 `P001.json` follows:
@@ -50,6 +52,32 @@ schemas/innovation-review.schema.json
 ```
 
 ## Validation
+
+Use `finalize_report.py` for delivery. It validates the Source Pack and mode
+outputs, writes `P001.validation.json`, renders `P001.html`, checks the HTML, and
+returns the delivery state.
+
+```powershell
+python skills\3dgs-paper-analyzer\scripts\finalize_report.py `
+  --mode standard-analysis `
+  --paper-id P001 `
+  --output-dir analysis-output\P001
+
+python skills\3dgs-paper-analyzer\scripts\finalize_report.py `
+  --mode innovation-review `
+  --paper-id P001 `
+  --output-dir analysis-output\P001 `
+  --strict
+```
+
+Completion states:
+
+- `COMPLETE`: all required files exist; validators PASS; HTML exists and is non-empty.
+- `COMPLETE_WITH_WARNINGS`: no FAIL; at least one WARN; HTML exists and is non-empty.
+- `INCOMPLETE`: any required file is missing, any validator FAILs, validation JSON is missing, or HTML is missing/empty/invalid.
+
+Do not report a paper analysis complete unless finalization returns `COMPLETE`
+or `COMPLETE_WITH_WARNINGS`.
 
 ```powershell
 python skills\3dgs-paper-analyzer\scripts\validate_source_pack.py `
@@ -75,10 +103,14 @@ python skills\3dgs-paper-analyzer\scripts\validate_cross_mode_consistency.py `
 
 ## HTML
 
-Use the single renderer:
+HTML is required for final delivery. `finalize_report.py` calls the single renderer:
 
 ```powershell
 python skills\3dgs-paper-analyzer\scripts\render_html.py `
   analysis-output\P001\P001.md `
   analysis-output\P001\P001.html
 ```
+
+Internal extraction files, table dumps, cloned official code, and other working
+materials belong under `analysis-output\P001\_work\`. `_work\` is not part of
+formal delivery and is ignored by batch aggregation.
